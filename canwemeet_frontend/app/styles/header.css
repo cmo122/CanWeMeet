@@ -1,0 +1,28 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Define the initial styles for the link */
+.underline-hover {
+    position: relative;
+    text-decoration: none;
+  }
+  
+/* Create the underline effect using a pseudo-element */
+.underline-hover::before {
+    content: '';
+    position: absolute;
+    bottom: -2px; /* Adjust this value to control the distance from the text */
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: black; /* Set the color of the underline */
+    transform: scaleX(0); /* Initial scaleX value for the animation */
+    transform-origin: bottom left;
+    transition: transform 0.3s ease-in-out; /* Transition for the animation */
+}
+
+/* Apply the animation on hover */
+.underline-hover:hover::before {
+    transform: scaleX(1); /* ScaleX value for the fully visible underline */
+}
