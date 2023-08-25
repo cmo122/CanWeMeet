@@ -12,10 +12,10 @@
 .underline-hover::before {
     content: '';
     position: absolute;
-    bottom: -2px; /* Adjust this value to control the distance from the text */
+    bottom: -4px; /* Adjust this value to control the distance from the text */
     left: 0;
     width: 100%;
-    height: 2px;
+    height: 6px;
     background-color: black; /* Set the color of the underline */
     transform: scaleX(0); /* Initial scaleX value for the animation */
     transform-origin: bottom left;

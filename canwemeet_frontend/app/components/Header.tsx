@@ -1,18 +1,19 @@
 import '../styles/header.css'
+import Link from 'next/link'
 
 export default function Header() {
     return (
     <header className="flex flex-col p-4 mt-0 bg-blue-300">
         <nav>
-            <ul className="flex group font-montserrat text-xl space-x-4">
+            <ul className="flex group justify-center font-montserrat text-xl space-x-4">
                 <li className='underline-hover'>
-                    <a href="/">CanWeMeet</a>
+                    <Link href="/">CanWeMeet</Link>
                 </li>
                 <li className='underline-hover'>
-                    <a href="/about">About</a>
+                    <Link href="/about">About</Link>
                 </li>
                 <li className='underline-hover'>
-                    <a href="/signin">Sign In</a>
+                    <Link href="/signin">Sign In</Link>
                 </li>
             </ul>
         </nav>

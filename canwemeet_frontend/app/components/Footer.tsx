@@ -7,7 +7,8 @@ export default function Footer() {
     return (
     <footer className="flex flex-col p-4 bg-black">
         <nav>
-            <ul className="flex group font-montserrat text-xl space-x-4">
+            <ul className="group justify-center flex font-montserrat text-xl space-x-4">
+                <li className='flex text-white items-center content-center justify-center'>Contact Me!</li>
                 <li>
                     <a href="https://github.com/cmo122">
                         <Image className="w-14 h-14" src={githublogo} alt="GitHub Logo"/>
