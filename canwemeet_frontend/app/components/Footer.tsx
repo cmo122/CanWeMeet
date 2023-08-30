@@ -6,7 +6,7 @@ import '../styles/footer.css'
 
 export default function Footer() {
     return (
-    <footer className="flex flex-col p-4 bg-black -z-2 footer
+    <footer className="flex flex-col p-4 bg-black-100 -z-2 footer
     bg-[rgba(255,255,255,0.4)] shadow-md backdrop-blur-xl">
         <nav>
             <ul className="group justify-center flex font-montserrat text-xl space-x-4">
@@ -17,7 +17,7 @@ export default function Footer() {
                     </a>
                 </li>
                 <li>
-                    <a href="/about">
+                    <a href="https://www.linkedin.com/in/curtis-mo-95066ba2/">
                         <Image className="w-16 h-14" src={linkedinlogo} alt="LinkedIn Logo"/>    
                     </a>
                 </li>
