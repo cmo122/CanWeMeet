@@ -1,27 +1,37 @@
-import React, { useState } from "react";
-import '../styles/dayselector.css'
+import React, { useEffect, useState } from "react";
 
+interface Days {
+    dayName: string;
+    checkedStatus: boolean;
+  }
 
 export default function DaySelector() {
-    const [days] = useState(['Sun','Mon','Tue','Wed','Thur','Fri','Sat'])
-    const [dayColor, setDayColor] = useState(['bg-red-500', 'bg-red-500',
-    'bg-red-500','bg-red-500','bg-red-500','bg-red-500','bg-red-500'])
+    const [days, setDays] = useState<Days[]>([])
 
-    function handleSelection(index:number) {
-        const newColors = [...dayColor]
-        newColors[index] === 'bg-red-500' ? newColors[index] = 'bg-green-500'
-            : newColors[index] = 'bg-red-500'
-        setDayColor(newColors)
+    const populateDays = () => {
+        const dayNamesList = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
+        const daysList=[]
+        for (let i = 0; i < 7; i++){
+            daysList.push({dayName:dayNamesList[i], checkedStatus:false})
+        }
+        return daysList
     }
+
+    useEffect(() => {
+        setDays(populateDays())
+    },[])
 
     return (
      <div className="flex justify-center items-center">
             {days.map((day, index) => (
             <div key={index} className="flex flex-col justify-center items-center m-3">
-                <h2>{day}</h2>
-                <div onClick={()=>handleSelection(index)} className={`daySegment ${dayColor[index]}`}>
-                
-                </div>
+                <h2 className="text-white">{day.dayName}</h2>
+                <input
+                type="checkbox"
+                name={day.dayName}
+                value={day.dayName}
+                className="w-6 h-6 p-4"
+              />
             </div>
 
          ))}

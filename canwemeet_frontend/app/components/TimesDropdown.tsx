@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react"
+import PropTypes, { InferProps } from 'prop-types';
 
-export default function TimesDropdown() {
+interface props{
+    timeType:string
+}
+
+export default function TimesDropdown({timeType}: props) {
     const [times,setTimes]=useState<string[]>([])
 
     const generateTimes = () => {
@@ -17,14 +22,21 @@ export default function TimesDropdown() {
       }, []);
 
     return (
-        <div>
-            <select name="times" id="times" className="rounded-md m-2">
-                {times.map((time, index) => (
-                    <option key={index} value={time}>{time}</option>
-                ))
-
-                }
-            </select>
-        </div>
+        <div className='flex justify-center items-center'>
+            {timeType === 'initialTime' ?  
+                <p className='text-white'>No earlier than: </p> :
+                <p className='text-white'>No later than: </p> }
+                
+                <select name={timeType} id="times" className="rounded-md m-2">
+                    {times.map((time, index) => (
+                        <option key={index} value={time}>{time}</option>
+                    ))
+                    }
+                </select>
+            <select name={`${timeType}Meridiem`} id={`${timeType}Meridiem`} defaultValue="" className='m-2'>
+                    <option value="am">AM</option>
+                    <option value="pm">PM</option>
+                </select>
+            </div>
     )
 }

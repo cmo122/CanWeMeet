@@ -8,9 +8,12 @@ import '../app/styles/input.css'
 
 export default function SignIn() {
   return (
-    <div >
-        <Layout>
-          <div id="signin" className="h-screen flex flex-col justify-center items-center bg-orange-200 background-animation">
+    <Layout>
+      
+      
+      <div id="signin" className="h-screen flex flex-col justify-center items-center bg-orange-200 background-animation">
+      <div id="signinwindow" className="flex flex-col justify-center content-center p-5 rounded-lg
+              bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg h-[35rem]">
             <form action="" method='POST' className="flex flex-col">
             <label htmlFor="username" className="text-xl text-white"> Username
             </label>
@@ -26,8 +29,8 @@ export default function SignIn() {
             <a className="text-white hover:text-gray-400" href="/signup">Create account</a>
             <a className="text-white hover:text-gray-400" href="">Forgot password?</a>
             </form>
-          </div>
-        </Layout>
-    </div>
+        </div>
+      </div>
+      </Layout>
   )
 }
