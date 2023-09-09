@@ -9,12 +9,14 @@ import '../app/styles/calendar.css'
 import { Provider } from 'react-redux';
 import { useAppSelector } from '@/app/components/redux/hooks';
 import store from '../app/components/redux/store';
+import { useEffect } from 'react';
 
 
 export default function Main() {
-
   
 
+  
+  
   return (
     <Provider store={store}>
           <Layout>
@@ -23,14 +25,14 @@ export default function Main() {
             <div id="eventCreationWindow" className="flex flex-col justify-center content-center p-5 rounded-lg
                 bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg h-[45rem]">
               <form action="http://localhost:3000" method='POST' className="flex flex-col justify-center content-center">
-                    <div className="flex justify-center content-center">
-                      <label htmlFor="eventName" className="text-xl text-white"> Event:
-                        <input type="text" placeholder="Enter event name here!"
-                        className="input-effect ::placeholder:text-black-200"
-                        name="eventName"/>
-                      </label>
-                    </div>
-              <h1 className='text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]'>What times will work?</h1>
+                <div className="flex justify-center content-center">
+                  <label htmlFor="eventName" className="text-xl text-white"> Event:
+                    <input type="text" placeholder="Enter event name here!"
+                    className="input-effect ::placeholder:text-black-200"
+                    name="eventName"/>
+                  </label>
+                </div>
+                <h1 className='text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]'>What times will work?</h1>
                 <TimesDropdown timeType='initialTime'/>
                 <TimesDropdown timeType='finalTime'/>
                 <DateFormatPicker/>
@@ -44,7 +46,6 @@ export default function Main() {
     
           </div>
           </Layout>
-    
   </Provider>
     )
   }
