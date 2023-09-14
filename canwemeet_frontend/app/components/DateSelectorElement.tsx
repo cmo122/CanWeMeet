@@ -3,15 +3,20 @@ import DayPickerWrapper from '@/app/components/DayPickerWrapper';
 import { Group } from '@mantine/core';
 import { useAppSelector } from './redux/hooks';
 
-export default function DateSelectorElement() {
+interface props  {
+    register: any
+    control:any
+}
+  
+export default function DateSelectorElement({register,control}:props) {
     const dateView = useAppSelector((state) => state.dateView);
     return (
         <Group position="center">
             {dateView === 'dates' && (
-                <DayPickerWrapper/>
+                <DayPickerWrapper control={control}/>
                 )}
                 {dateView === 'days' && (
-                <DaySelector/>
+                <DaySelector register={register}/>
                 )}
         </Group>
     )

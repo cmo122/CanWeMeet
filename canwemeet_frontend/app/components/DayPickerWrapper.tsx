@@ -1,39 +1,36 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React from "react";
 import { DatePicker } from '@mantine/dates';
+import { useForm, Controller } from "react-hook-form";
 
 
-export default function DayPickerWrapper() {
-    const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+interface props  {
+  control:any
+}
+
+
+export default function DayPickerWrapper({control}:any) {
   
-    const handleSubmit = (e: FormEvent) => {
-      e.preventDefault();
-  
-        if (selectedDates.length > 0) {
-        const selectedDatesString = selectedDates.map((date) => date.toISOString()).join(',');
-        const formData = new FormData();
-        formData.append('selectedDate', selectedDatesString);
-  
-        fetch('http://localhost:3000', {
-          method: 'POST',
-          body: formData,
-        })
-            .then((response) => {
-              console.log(formData)
-          })
-            .catch((error) => {
-                console.log(error)
-          });
-      }
-    };
+    const {
+      formState: { errors },
+      setValue
+    } = useForm()
   
     return (
-      <div id='datepicker-container'>
-            <DatePicker
+      <Controller
+        name="dates"
+        control={control}
+        defaultValue={[new Date()]}
+        render={({ field }) => (
+          <DatePicker
             type="multiple"
-            value={selectedDates}
-            onChange={setSelectedDates}
-            onSubmit={handleSubmit}
+            defaultValue={[new Date()]}
+            value={field.value}
+            onChange={(selectedDates) => {
+              setValue('date', selectedDates);
+              field.onChange(selectedDates);
+            }}
           />
-      </div>
+        )}
+      />
     );
   }

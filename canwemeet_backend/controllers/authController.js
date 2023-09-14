@@ -5,14 +5,9 @@ require('dotenv').config();
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const { createServerComponentClient } = require("@supabase/auth-helpers-nextjs");
-const { cookies } = require("next/headers");
+// const { cookies } = require("next/headers");
+const {createClient}= require('@supabase/supabase-js')
 
-// exports.testing = (
-//     asyncHandler(async (req, res, next) => {
-//         console.log("test")
-//         // res.status(200).send();
-//     })
-// )
 
 exports.signIn_post = [
     body("username", "Username must not be empty.")
@@ -23,25 +18,24 @@ exports.signIn_post = [
 ]
 
 exports.signUp_post = [
-    asyncHandler(async (req, res, next) => {
-        console.log("test")
-        next()
-    })
-    ,
-    body("username", "Username must not be empty.")
+    body("username", "username is required")
     .trim()
-    .isLength({ min: 3 })
-    .escape(),
+    .isLength({ min: 4 })
+    .escape()
+    ,
     body("password", "Password must not be empty").trim().isLength({ min: 8 }).escape(),
-    body('passwordConfirm').custom((value, { req }) => {
+    body('confirmPassword').custom((value, { req }) => {
         return value === req.body.password;
       }).withMessage('Passwords must match'),
 
     asyncHandler(async (req, res, next) => {
-        const supabase = createServerComponentClient({ cookies })
+        
+        const supabaseUrl = process.env.SUPABASE_URL
+        const supabaseKey = process.env.SUPABASE_ANON_KEY
+        const supabase = createClient(supabaseUrl, supabaseKey)
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-        
+
         const { data, error } = await supabase
         .from('Users')
         .insert([
@@ -53,7 +47,12 @@ exports.signUp_post = [
             },
         ])
         .select()
-        console.log("made it!")
+        
+        if (error) {
+            console.error("woops! ",error.message);
+            } else {
+            console.log(data);
+            }
         res.status(200).send()
     })
     

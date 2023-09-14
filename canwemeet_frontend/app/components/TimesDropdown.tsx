@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react"
 import PropTypes, { InferProps } from 'prop-types';
+import { useForm, Controller, useFieldArray, SubmitHandler  } from "react-hook-form";
 
 interface props{
-    timeType:string
+    timeType: string
+    register: any
 }
 
-export default function TimesDropdown({timeType}: props) {
+export default function TimesDropdown({timeType,register}: props) {
     const [times,setTimes]=useState<string[]>([])
+
 
     const generateTimes = () => {
         const timeList = []
@@ -27,13 +30,13 @@ export default function TimesDropdown({timeType}: props) {
                 <p className='text-white'>No earlier than: </p> :
                 <p className='text-white'>No later than: </p> }
                 
-                <select name={timeType} id="times" className="rounded-md m-2">
+                <select {...register(`${timeType}`)} id="times" className="rounded-md m-2">
                     {times.map((time, index) => (
                         <option key={index} value={time}>{time}</option>
                     ))
                     }
                 </select>
-            <select name={`${timeType}Meridiem`} id={`${timeType}Meridiem`} defaultValue="" className='m-2'>
+            <select {...register(`${timeType}Meridiem`)} id={`${timeType}Meridiem`} defaultValue="" className='m-2'>
                     <option value="am">AM</option>
                     <option value="pm">PM</option>
                 </select>

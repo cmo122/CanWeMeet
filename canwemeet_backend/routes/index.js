@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const authController=require("../controllers/authController")
+const authController = require("../controllers/authController")
+const eventController=require("../controllers/eventController")
 
 // Home page routes
-// router.get('/', authController.testing);
-// router.post('/', authController.testing);
+router.post('/', eventController.createEvent);
 // Sign in routes
 router.post('/signin', authController.signIn_post);
 router.post('/signup', authController.signUp_post);
