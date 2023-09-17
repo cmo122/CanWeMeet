@@ -13,6 +13,7 @@
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.7.4",
     "@supabase/supabase-js": "^2.33.1",
+    "@types/node": "^20.6.2",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -22,6 +23,7 @@
     "express-async-handler": "^1.2.0",
     "express-session": "^1.17.3",
     "express-validator": "^7.0.1",
+    "hashids": "^2.3.0",
     "http-errors": "^2.0.0",
     "morgan": "^1.10.0",
     "next": "^13.4.19",
@@ -32,7 +34,8 @@
     "pino": "^8.15.0",
     "pino-http": "^8.4.0",
     "pino-pretty": "^10.2.0",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "sqids": "^0.3.0"
   },
   "devDependencies": {
     "supabase": "^1.93.0"

@@ -1,37 +1,68 @@
 import React, { useEffect,  useState } from "react";
-import { useForm, Controller, useFieldArray, SubmitHandler  } from "react-hook-form";
+import { useForm, Control, Controller } from "react-hook-form";
 
 interface props  {
-  register:any
+  control: Control
+  view:string
 }
 
 type DayData = {
   days:string[]
 }
 
-export default function DaySelector({register}:props) {
-  const [days, setDays] = useState<string[]>([])
+export default function DaySelector({ control, view }: props) {
+  
+  const [dayOptions, setDayOptions]=useState(['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'])
+
   const {
     handleSubmit,
+    register,
+    unregister,
     formState: { errors },
   } = useForm<DayData>()
 
-    const dayOptions = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
+  useEffect(() => {
+    
+      return () => {
+        if (view === "dates") {
+          unregister("days")
+          }
+      }
+    },[view,unregister])
+
+  if (view === "days") {
     return (
-      <div
-        className="flex justify-center items-center">
+      <Controller
+        {...register(`days`)}
+        control={control}
+        render={({ field }) => (
+          <div className="flex justify-center items-center">
             {dayOptions.map((day, index) => (
-            <div key={index} className="flex flex-col justify-center items-center m-3">
+              <div key={index} className="flex flex-col justify-center items-center m-3">
                 <h2 className="text-white">{day}</h2>
                 <input
-                type="checkbox"
-                {...register(`days.${index}`)}
-                value={day}
-                className="w-6 h-6 p-4"
+                  type="checkbox"
+                  {...field}
+                  value={day}
+                  checked={Array.isArray(field.value) && field.value.includes(day)}
+                  onChange={(e) => {
+                    const checkedDay = e.target.value;
+                    const updatedDays = Array.isArray(field.value)
+                      ? field.value.includes(checkedDay)
+                        ? field.value.filter((selectedDay) => selectedDay !== checkedDay)
+                        : [...field.value, checkedDay]
+                      : [checkedDay];
+                    field.onChange(updatedDays); // Update the field's value
+                  }}
+                  className="w-6 h-6 p-4"
                 />
-            </div>
-
-         ))}
-     </div>
-    )
+              </div>
+            ))}
+          </div>
+        )}
+      />
+    );
+  } else {
+    return null;
+  }
 }

@@ -1,5 +1,3 @@
-import Image from 'next/image'
-import Index from '../pages/index'
 import Layout from '../app/components/Layout'
 // import Typewriter from 'typewriter-effect/dist/core'
 import '../app/styles/background.css'

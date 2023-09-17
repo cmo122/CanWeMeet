@@ -1,36 +1,51 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { DatePicker } from '@mantine/dates';
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, Control } from "react-hook-form";
 
 
 interface props  {
-  control:any
+  control: Control
+  view: string
 }
 
 
-export default function DayPickerWrapper({control}:any) {
-  
+export default function DayPickerWrapper({ control,view}:props) {
+
     const {
       formState: { errors },
-      setValue
+      setValue,
+      register,
+      unregister
     } = useForm()
   
-    return (
-      <Controller
-        name="dates"
-        control={control}
-        defaultValue={[new Date()]}
-        render={({ field }) => (
-          <DatePicker
-            type="multiple"
-            defaultValue={[new Date()]}
-            value={field.value}
-            onChange={(selectedDates) => {
-              setValue('date', selectedDates);
-              field.onChange(selectedDates);
-            }}
-          />
-        )}
-      />
-    );
+  useEffect(() => {
+    
+      return () => {
+        if (view === "days") {
+          unregister("dates")
+          }
+      }
+    },[view,unregister])
+  
+    if (view === "dates") {
+      return (
+        <Controller
+          control={control}
+          {...register(`dates`)}
+          render={({ field }) => (
+            <DatePicker
+              type="multiple"
+              defaultValue={[new Date()]}
+              value={field.value}
+              onChange={(selectedDates) => {
+                setValue("date", selectedDates);
+                field.onChange(selectedDates);
+              }}
+            />
+          )}
+        />
+      );
+    } else {
+      return null;
+    }
   }
