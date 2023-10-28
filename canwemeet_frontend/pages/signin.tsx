@@ -10,9 +10,9 @@ export default function SignIn() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   return (
     <Layout>
-      <div id="signin" className="h-screen flex flex-col justify-center items-center bg-orange-200 background-animation">
+      <div id="signin" className="h-screen flex flex-col justify-center items-center">
         <div id="signinwindow" className="flex flex-col justify-center content-center p-5 rounded-lg
-                bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg h-[35rem]">
+                bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg h-[35rem] max-md:w-[21rem] max-md:h-[30rem]">
               <form action="" method='POST' className="flex flex-col">
                 <label htmlFor="username" className="text-xl text-white"> Username
                 </label>

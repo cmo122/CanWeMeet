@@ -7,7 +7,7 @@ export default function Layout({children}:{children:ReactNode}) {
     return (
         <div id="layout" className="background-animation">
             <Header />
-                <main>{children}</main>
+                <main className="flex justify-center items-center max-md:m-5">{children}</main>
             <Footer/>
         </div>
     )

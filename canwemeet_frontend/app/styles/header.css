@@ -4,7 +4,6 @@
 
 
 .header{
-    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -19,6 +18,9 @@
     transition: box-shadow 0.3s, color 0.3s, background-color 0.3s;
     color: white;
     text-shadow: 0 1.2px 1.2px rgba(0, 0, 0, 0.8);
+    @media screen and (max-width: 768px) {
+        font-size: 1rem;
+}
 }
 
 .link:hover {

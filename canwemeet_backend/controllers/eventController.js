@@ -8,10 +8,9 @@ const Hashids= require('hashids/cjs')
 exports.createEvent = [
     asyncHandler(async (req, res, next) => {
         const hashids = new Hashids()
-
-        console.log(hashids.encode(1,2,3))
+        const newURL=hashids.encode(1,2,3)
         console.log("Request body", req.body)
-        res.status(200).send()
+        res.redirect(`http://localhost:3000/${newURL}`)
     })
         
 ]

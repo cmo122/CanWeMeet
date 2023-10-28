@@ -1,6 +1,8 @@
 import React, {useEffect} from "react";
 import { DatePicker } from '@mantine/dates';
+import { Group } from "@mantine/core";
 import { useForm, Controller, Control } from "react-hook-form";
+import '../styles/calendar.css'
 
 
 interface props  {
@@ -32,17 +34,34 @@ export default function DayPickerWrapper({ control,view}:props) {
         <Controller
           control={control}
           {...register(`dates`)}
-          render={({ field }) => (
-            <DatePicker
-              type="multiple"
-              defaultValue={[new Date()]}
-              value={field.value}
-              onChange={(selectedDates) => {
-                setValue("date", selectedDates);
-                field.onChange(selectedDates);
-              }}
-            />
-          )}
+          render={({ field }) => {
+            return(
+              <Group>
+                <DatePicker
+                  type="multiple"
+                  defaultValue={[new Date()]}
+                  value={field.value}
+                  size="xs"
+                  className='mobile'
+                  onChange={(selectedDates) => {
+                    setValue("date", selectedDates);
+                    field.onChange(selectedDates);
+                  }}
+                />
+                <DatePicker
+                  type="multiple"
+                  defaultValue={[new Date()]}
+                  value={field.value}
+                  size="sm"
+                  className='desktop'
+                  onChange={(selectedDates) => {
+                    setValue("date", selectedDates);
+                    field.onChange(selectedDates);
+                  }}
+                />
+              </Group>
+            )
+          }}
         />
       );
     } else {

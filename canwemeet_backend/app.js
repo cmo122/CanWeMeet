@@ -4,15 +4,12 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
-const bodyParser = require('body-parser');
-const http = require('http')
 const bcrypt = require('bcrypt')
 const passport = require('passport');
 const session = require("express-session");
 const LocalStrategy = require('passport-local').Strategy;
 const cors = require('cors');
 var indexRouter = require('./routes/index');
-const pgp = require('pg-promise')
 var cors_proxy = require('cors-anywhere');
 
 // Create the express app
@@ -22,8 +19,6 @@ const app = express()
 
 app.use(cors());
 app.options('*', cors());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -46,9 +41,8 @@ app.use(function(req, res, next) {
 });
 
 // Start server
-const serverport = 1234;
 const host= 'localhost'
-app.listen(serverport, function (err) {
+app.listen(process.env.PORT, function (err) {
   if (err) {
     return console.error(err)
   }

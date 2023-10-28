@@ -71,15 +71,15 @@ export default function App() {
   return (
     <Provider store={store}>
           <Layout>
-          <div id='mainContent' className="flex flex-col justify-center items-center h-screen background-animation
+          <div id='mainContent' className="flex flex-col justify-center items-center min-h-screen
             rounded-lg">
-            <div id="eventCreationWindow" className="flex flex-col justify-center content-center p-5 rounded-lg
-                bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg h-[45rem]">
-              <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center">
+            <div id="eventCreationWindow" className="flex flex-col justify-center items-center p-5 rounded-lg
+                bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg max-md:w-[21rem] max-md:h-[45rem]">
+              <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center max-md:w-[20rem] max-md:h-[20rem]">
                 <div className="flex justify-center content-center">
                   <label htmlFor="eventName" className="text-xl text-white"> Event:
                     <input type="text" placeholder="Enter event name here!"
-                    className="input-effect ::placeholder:text-black-200"
+                    className="input-effect ::placeholder:text-black-200 max-md:w-[16rem]"
                     {...register("eventName")}/>
                   </label>
                 </div>
@@ -89,7 +89,7 @@ export default function App() {
                 <DateFormatPicker/>
                 <DateSelectorElement control={control}/>
                 <button type="submit" className='rounded-lg p-4 m-4 border border-solid border-black text-white
-                      drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] w-30
+                      drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
                       hover:shadow-lg hover:bg-black transition'>
                 Create new event →</button>
               </form>
