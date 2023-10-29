@@ -5,7 +5,6 @@ require('dotenv').config();
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const { createServerComponentClient } = require("@supabase/auth-helpers-nextjs");
-// const { cookies } = require("next/headers");
 const {createClient}= require('@supabase/supabase-js')
 
 

@@ -55,8 +55,15 @@ export default function App() {
       },
       body: JSON.stringify(data),
     })
-      .then((response) => {
-        console.log(data)
+      .then(async (response) => {
+        if (response.status === 200) {
+          const responseData = await response.json();
+          const newURL = responseData.newURL;
+  
+          window.location.href = newURL;
+        } else {
+          console.log("Error: ", response);
+        }
       })
       .catch((error) => {
         console.log(error)
