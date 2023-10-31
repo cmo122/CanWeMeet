@@ -1,0 +1,6 @@
+.mantine-Grid-col{
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: end;
+}

@@ -4,6 +4,7 @@ import '../app/styles/background.css'
 import '../app/styles/input.css'
 import { useForm } from "react-hook-form";
 import React from 'react'
+import GlassWindow from '@/app/components/GlassWindow';
 
 
 export default function SignIn() {

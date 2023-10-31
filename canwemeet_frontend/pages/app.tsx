@@ -10,6 +10,7 @@ import store from '../app/components/redux/store';
 import { useForm, SubmitHandler  } from "react-hook-form";
 import React, {  useEffect, useState } from 'react';
 import { useAppSelector } from '../app/components/redux/hooks';
+import GlassWindow from '@/app/components/GlassWindow';
 
 
 interface IFormInput {
@@ -78,11 +79,9 @@ export default function App() {
   return (
     <Provider store={store}>
           <Layout>
-          <div id='mainContent' className="flex flex-col justify-center items-center min-h-screen
-            rounded-lg">
-            <div id="eventCreationWindow" className="flex flex-col justify-center items-center p-5 rounded-lg
-                bg-[rgba(255,255,255,0.5)] shadow-md backdrop-blur-sm rounded-lg max-md:w-[21rem] max-md:h-[45rem]">
-              <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center max-md:w-[20rem] max-md:h-[20rem]">
+          <div id='mainContent' className="flex flex-col justify-center items-center min-h-screen">
+          <GlassWindow>
+            <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center max-md:w-[20rem] max-md:h-[20rem]">
                 <div className="flex justify-center content-center">
                   <label htmlFor="eventName" className="text-xl text-white"> Event:
                     <input type="text" placeholder="Enter event name here!"
@@ -99,8 +98,8 @@ export default function App() {
                       drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
                       hover:shadow-lg hover:bg-black transition'>
                 Create new event →</button>
-              </form>
-          </div>
+            </form>
+          </GlassWindow>
           </div>
           </Layout>
   </Provider>
