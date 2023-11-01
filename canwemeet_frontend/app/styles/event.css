@@ -4,3 +4,7 @@
     justify-content: end;
     align-items: end;
 }
+
+.selected{
+    background-color: green;
+}

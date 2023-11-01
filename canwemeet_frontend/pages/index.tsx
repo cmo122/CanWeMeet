@@ -10,7 +10,7 @@ export default function Index() {
   return (
     <Provider store={store}>
       <Head>
-        <meta name="viewport" content="width=device-width, height=device-height" />
+        <meta name="viewport" content="width=device-width" />
       </Head>
       <App />
     </Provider>

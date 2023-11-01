@@ -1,5 +1,6 @@
-import React, {useState,useEffect} from "react";
-import { Grid, rem } from '@mantine/core';
+import React, {useState,useEffect, FormEventHandler} from "react";
+import { Grid, TextInput, Button } from '@mantine/core';
+import {useForm} from '@mantine/form'
 import { useRouter } from 'next/router';
 import Layout from '../app/components/Layout'
 import {createClient} from '@supabase/supabase-js'
@@ -13,16 +14,29 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 
 const customGridStyles = {
   root: {
-    '--grid-justify':'end',
-    '--grid-align':'end'
+    'overflow-x': "auto",
+    
   },
+  col:{
+    'margin-right':'-10px',
+    'padding':'0px'
+  }
 };
+
+interface User {
+  name: string;
+  freetime: string[];
+}
 
 export default function Event() {
 
     const [event, setEvent] = useState<any>(null);
     const [sortedDates, setSortedDates] = useState<any>([])
     const [eventTimes, setEventTimes]=useState<any>([])
+    const [nameInput, setNameInput]=useState<string>('')
+    const [user, setUser] = useState<User>({name:'', freetime:[]})
+    const [selectedDivs, setSelectedDivs] = useState<string[]>([]);
+    const [mouseIsDown, setMouseIsDown] = useState(false);
 
     const router = useRouter();
     const currentUrl = router.asPath;
@@ -47,29 +61,81 @@ export default function Event() {
       }
       setEventTimes(timeIntervals)
     },[event])
-      
 
-    function generateTimeGrids(outerIndex:number){
+    useEffect(() => {
+      const handleBroadcasts = (payload:{ type: "broadcast"; event: string; payload: { [key: string]: any; }; }) => {
+        console.log('Change received!', payload)
+      }
+      const subscription = supabase
+        .channel("events")
+        .on('broadcast', {event:"INSERT"}, handleBroadcasts)
+        .subscribe()
+    
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, []);
+    
+    const handleMouseDown = (id:string) => {
+      if (!selectedDivs.includes(id)) {
+        setSelectedDivs((prevDivs) => [...prevDivs, id]);
+      }
+      setMouseIsDown(true);
+    };
+  
+    const handleMouseUp = (id:string) => {
+      setSelectedDivs((prevDivs) => prevDivs.filter((divId) => divId !== id));
+      setMouseIsDown(false);
+    };
+  
+    const handleMouseEnter = (id: string) => {
+      if (mouseIsDown) {
+        if (!selectedDivs.includes(id)) {
+          setSelectedDivs((prevDivs) => [...prevDivs, id]);
+        } else {
+          setSelectedDivs((prevDivs) => prevDivs.filter((divId) => divId !== id));
+        }
+      }
+    };
+    
+    
+
+    function generateTimeGrids(outerIndex:number, date:string){
+      const newDate=new Date(date)
+      const month = newDate.toLocaleString('default', { month: 'short' });
+      const day = newDate.getDate();
+      const year = newDate.getFullYear();
       return (
-      <div>
+        <Grid.Col>
         {eventTimes.map((time:Date, index:number) => {
+          const id:any = `${month},${day},${year}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
+          const isDivSelected = selectedDivs.includes(id);
           return(
               <div className="flex" key={index}>
                 {outerIndex === 0 && (
-                  <div>
-                    <div className="text-xs">
-                      {time.getMinutes() === 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:00` : ''}
-                      {time.getMinutes() !== 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:${time.getMinutes()}` : ''}
-                    </div>
-                  </div>
+                      <div className="text-xs p-1">
+                        {time.getMinutes() === 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:00` : ''}
+                        {time.getMinutes() !== 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:${time.getMinutes()}` : ''}
+                      </div>
                 )}
                 <div>
-                  <div className="w-10 h-4 border border-black"></div>
+                  <div
+                  id={id} 
+                  className={`w-12 h-6 border border-black ${
+                    isDivSelected  ? 'selected' : ''
+                  }`}
+                  data-date={`${year}-${month}-${day}`}
+                  data-time={`${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`}
+                  onMouseDown={() => handleMouseDown(id)}
+                  onMouseUp={() => handleMouseUp(id)}
+                  onMouseEnter={() => handleMouseEnter(id)}
+                  >
+                  </div>
                 </div>
               </div>
           )
         })}
-      </div>
+      </Grid.Col>
       )
     }
 
@@ -108,11 +174,15 @@ export default function Event() {
 
     },[event])  
 
+    const handleSubmit: React.FormEventHandler = (e) => {
+      e.preventDefault();
+      setUser({name:nameInput, freetime:[]});
+    }
 
     return (
       <Layout>
       {event && sortedDates ? (
-        <div className="flex h-screen w-screen justify-center">
+        <div className="flex flex-grow  justify-center">
           <GlassWindow >
             <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
 
@@ -120,22 +190,35 @@ export default function Event() {
               <button className="rounded-lg border-solid border border-sky-500 p-1 m-5">Copy Link</button>
             </div>
 
+            {user.name==='' && 
+            <form onSubmit={handleSubmit}>
+              <TextInput
+              label="Enter name to start entering dates: "
+              placeholder="John Doe"
+              onChange={(e) => setNameInput(e.target.value)}
+              />
+              
+              <Button type='submit' className="bg-blue-500">Sign In</Button>
+            </form>}
+
+            {user && <div>{user.name}</div>}
+
             <Grid styles={customGridStyles} 
-            gutter={{base:6}}>
+            gutter={0}>
               {sortedDates.map((date : string, index : number)=>{
                 const convertDate=new Date(date)
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
                 const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
                 return(
-                  <Grid.Col  span="auto">
+                  <Grid.Col span={3}>
                     <div key={index}>
                         <div>
                           <p className=" flex text-sm justify-end">{formattedDate}</p>
                           <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
                         </div>
-                        {generateTimeGrids(index)}
                     </div>
+                    <div>{generateTimeGrids(index, date)}</div>
                   </Grid.Col>
                 )
               })}

@@ -5,7 +5,7 @@ import '../styles/background.css'
 
 export default function Layout({children}:{children:ReactNode}) {
     return (
-        <div id="layout" className="background-animation">
+        <div id="layout" className="flex flex-col flex-grow background-animation">
             <Header />
                 <main className="flex justify-center items-center max-md:m-5">{children}</main>
             <Footer/>
