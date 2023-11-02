@@ -79,9 +79,9 @@ export default function App() {
   return (
     <Provider store={store}>
           <Layout>
-          <div id='mainContent' className="flex flex-col justify-center items-center min-h-screen">
+          <div id='mainContent' className="flex flex-col flex-grow justify-center items-center min-h-screen max-md:max-w-[20rem]">
           <GlassWindow>
-            <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center max-md:w-[20rem] max-md:h-[20rem]">
+            <form onSubmit={handleSubmit(onSubmitCustom)} className="flex flex-col justify-center content-center">
                 <div className="flex justify-center content-center">
                   <label htmlFor="eventName" className="text-xl text-white"> Event:
                     <input type="text" placeholder="Enter event name here!"

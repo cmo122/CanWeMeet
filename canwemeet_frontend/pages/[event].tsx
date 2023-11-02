@@ -29,19 +29,23 @@ interface User {
 }
 
 export default function Event() {
-
+    const router = useRouter();
     const [event, setEvent] = useState<any>(null);
     const [sortedDates, setSortedDates] = useState<any>([])
     const [eventTimes, setEventTimes]=useState<any>([])
     const [nameInput, setNameInput]=useState<string>('')
-    const [user, setUser] = useState<User>({name:'', freetime:[]})
+    const [anonUser, setAnonUser] = useState<User>({name:'', freetime:[]})
     const [selectedDivs, setSelectedDivs] = useState<string[]>([]);
     const [mouseIsDown, setMouseIsDown] = useState(false);
+    const [eventId, setEventId] = useState('');
 
-    const router = useRouter();
-    const currentUrl = router.asPath;
-    const eventId = currentUrl.replace(/^\/+/, '');
+    // Creates event ID from URL path
+    useEffect(() => {
+    
+    setEventId(router.asPath.replace(/^\/+/, ''));
+    }, [router.asPath]);
 
+    // Sets time range for time grid generation
     useEffect(()=>{
       const timeIntervals = [];
       if(event){
@@ -62,21 +66,38 @@ export default function Event() {
       setEventTimes(timeIntervals)
     },[event])
 
+    // Setup realtime freetime updates
     useEffect(() => {
-      const handleBroadcasts = (payload:{ type: "broadcast"; event: string; payload: { [key: string]: any; }; }) => {
-        console.log('Change received!', payload)
+      async function updateFreetime(){
+        if(anonUser.name && selectedDivs.length>0){
+          try{
+            const response = await fetch(`http://localhost:1234/${eventId}`,
+            {
+              method: "POST",
+              headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({name:anonUser.name,freetime:selectedDivs})}
+          );
+
+          if(response.ok){
+            console.log(response.statusText)
+          }
+          else{
+            console.log(response.status, response.statusText)
+          }}catch(error){
+          console.log(error)
+        }
       }
-      const subscription = supabase
-        .channel("events")
-        .on('broadcast', {event:"INSERT"}, handleBroadcasts)
-        .subscribe()
+    }
     
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, []);
+    updateFreetime()
     
+  }, [selectedDivs]);
+    
+    // All mouse functions handle drag over logic
     const handleMouseDown = (id:string) => {
+      if(!anonUser.name) return;
       if (!selectedDivs.includes(id)) {
         setSelectedDivs((prevDivs) => [...prevDivs, id]);
       }
@@ -84,11 +105,13 @@ export default function Event() {
     };
   
     const handleMouseUp = (id:string) => {
+      if(!anonUser.name) return;
       setSelectedDivs((prevDivs) => prevDivs.filter((divId) => divId !== id));
       setMouseIsDown(false);
     };
   
     const handleMouseEnter = (id: string) => {
+      if(!anonUser.name) return;
       if (mouseIsDown) {
         if (!selectedDivs.includes(id)) {
           setSelectedDivs((prevDivs) => [...prevDivs, id]);
@@ -99,7 +122,7 @@ export default function Event() {
     };
     
     
-
+    // Generates time grid divs
     function generateTimeGrids(outerIndex:number, date:string){
       const newDate=new Date(date)
       const month = newDate.toLocaleString('default', { month: 'short' });
@@ -139,6 +162,7 @@ export default function Event() {
       )
     }
 
+    // Sets event state to row matching event ID in Events table
     useEffect(() => {
         async function fetchEventDetails() {
           try {
@@ -161,7 +185,7 @@ export default function Event() {
         fetchEventDetails();
       }, [eventId]);
     
-      // sorts dates once event data is loaded
+    // sorts dates once event data is loaded
     useEffect(()=>{
       let newDates;
       
@@ -174,9 +198,10 @@ export default function Event() {
 
     },[event])  
 
+    // Sets user details upon entering name
     const handleSubmit: React.FormEventHandler = (e) => {
       e.preventDefault();
-      setUser({name:nameInput, freetime:[]});
+      setAnonUser({name:nameInput, freetime:[]});
     }
 
     return (
@@ -190,7 +215,7 @@ export default function Event() {
               <button className="rounded-lg border-solid border border-sky-500 p-1 m-5">Copy Link</button>
             </div>
 
-            {user.name==='' && 
+            {anonUser.name==='' && 
             <form onSubmit={handleSubmit}>
               <TextInput
               label="Enter name to start entering dates: "
@@ -201,7 +226,7 @@ export default function Event() {
               <Button type='submit' className="bg-blue-500">Sign In</Button>
             </form>}
 
-            {user && <div>{user.name}</div>}
+            {anonUser && <div>{anonUser.name}</div>}
 
             <Grid styles={customGridStyles} 
             gutter={0}>
