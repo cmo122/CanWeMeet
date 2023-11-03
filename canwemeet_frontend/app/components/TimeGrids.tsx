@@ -1,5 +1,7 @@
 import { Grid } from "@mantine/core";
 import { useState } from "react";
+import { useAppSelector, useAppDispatch } from "./redux/hooks";
+import { setSelectedTimes } from "./redux/selectedTimesSlice";
 
 interface User {
     name: string;
@@ -11,38 +13,41 @@ interface User {
     date: string;
     eventTimes: Date[];
     user: User;
+    selectedDivs: string[]
   }
 
   // Generates time grid divs
   export default function TimeGrids(props:TimeGridProps)
     {
-
+    
+    const dispatch= useAppDispatch();
+    const selectedTimes = useAppSelector((state) => state.selectedTimes);
     // Mouse state
     const [mouseIsDown, setMouseIsDown] = useState(false);
-    const [selectedDivs, setSelectedDivs] = useState<string[]>([]);
 
     const handleMouseDown = (id:string) => {
         if(!props.user.name) return;
-        if (!selectedDivs.includes(id)) {
-          setSelectedDivs((prevDivs) => [...prevDivs, id]);
+        if (!selectedTimes.includes(id)) {
+          dispatch(setSelectedTimes([...selectedTimes, id]));
         }
         setMouseIsDown(true);
       };
     
       const handleMouseUp = (id:string) => {
         if(!props.user.name) return;
-        setSelectedDivs((prevDivs) => prevDivs.filter((divId) => divId !== id));
         setMouseIsDown(false);
+        console.log(selectedTimes)
       };
     
       const handleMouseEnter = (id: string) => {
-        if(!props.user.name) return;
+        if(!props.user.name || !mouseIsDown) return;
         if (mouseIsDown) {
-          if (!selectedDivs.includes(id)) {
-            setSelectedDivs((prevDivs) => [...prevDivs, id]);
-          } else {
-            setSelectedDivs((prevDivs) => prevDivs.filter((divId) => divId !== id));
-          }
+          const updatedSelectedTimes = selectedTimes.includes(id)
+          ? selectedTimes.filter((divId) => divId !== id)
+          : [...selectedTimes, id];
+
+          dispatch(setSelectedTimes(updatedSelectedTimes));
+
         }
       };
 
@@ -54,7 +59,7 @@ interface User {
       <Grid.Col>
       {props.eventTimes.map((time:Date, index:number) => {
         const id:any = `${month},${day},${year}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
-        const isDivSelected = selectedDivs.includes(id);
+        const isTimeSelected = selectedTimes.includes(id);
         return(
             <div className="flex" key={index}>
               {props.outerIndex === 0 && (
@@ -67,7 +72,7 @@ interface User {
                 <div
                 id={id} 
                 className={`w-12 h-6 border border-black ${
-                  isDivSelected  ? 'selected' : ''
+                  isTimeSelected  ? 'selected' : ''
                 }`}
                 data-date={`${year}-${month}-${day}`}
                 data-time={`${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`}

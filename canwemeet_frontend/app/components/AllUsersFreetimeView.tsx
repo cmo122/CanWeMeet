@@ -24,7 +24,6 @@ const customGridStyles = {
   }
 
 export default function AllUsersFreetimeView(props: AllUsersFreetimeViewProps){
-    const isTimeGridViewEnabled = useAppSelector((state) => state.timeGridView);
 
 
     const [event, setEvent] = useState<any>(props.event);
@@ -41,7 +40,29 @@ export default function AllUsersFreetimeView(props: AllUsersFreetimeViewProps){
         }
         setSortedDates(newDates)
   
-      },[event])  
+      },[event])
+      
+      useEffect(() => {
+          async function fetchEventDetails() {
+            try {
+              const { data, error } = await supabase
+                .from('Events')
+                .select('*')
+                .eq('eventID', event.eventID)
+                .single();
+      
+              if (error) {
+                console.error('Error fetching event details:', error);
+              } else {
+                setEvent(data);
+              }
+            } catch (error) {
+              console.error('Error fetching event details:', error);
+            }
+          }
+      
+          fetchEventDetails();
+        }, [event]);
 
     function generateTimeGrids(outerIndex:number, date:string){
         const newDate=new Date(date)
@@ -83,7 +104,8 @@ export default function AllUsersFreetimeView(props: AllUsersFreetimeViewProps){
 
     return(
         <div>
-            {isTimeGridViewEnabled && event && <Grid styles={customGridStyles}
+            <p>All Users Freetime</p>
+            { event && <Grid styles={customGridStyles}
             gutter={0}>
                 {sortedDates.map((date : string, index : number)=>{
                 const convertDate=new Date(date)

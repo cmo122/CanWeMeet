@@ -66,27 +66,48 @@ exports.createEvent = [
 
 exports.updateUserFreetime=[
     asyncHandler(async (req, res, next) => {
-        const { name, freetime } = req.body;
         const eventID= req.params.eventID
-        const { data, error } = await supabase
+        const { data: eventData } = await supabase
         .from('Events')
-        .update({
-            all_users_freetime:[{name,freetime}]
-        })
+        .select('all_users_freetime')
         .eq('eventID', eventID)
-        .select()
-        
-    if (error) {
-        return res.status(500).json({ error: 'An error occurred while updating freetime.' });
-    }
-    // const { data: changes, error: subscriptionError } = await supabase
-    //   .from('Events')
-    //   .on('all_users_freetime:UPDATE', (payload) => {
-    //     console.log('Real-time update received:', payload);
-    //   })
-    //   .subscribe();
+        .single();
 
-    return res.status(200).json({ message: 'Freetime updated successfully.' });
+        // this is the array of all current JSON within the array
+        // {name:string, freetime:string[]}
+        const currentAllUsersFreetime = eventData.all_users_freetime || [];
+
+        const { name, freetime } = req.body;
+        const existingUserIndex = currentAllUsersFreetime.findIndex(item => item.name === name);
+
+        if(existingUserIndex  !== -1){
+            // user exists, append new freetime to existing users freetime
+            // then, update all_users_freetime with updated array
+            const userFreetime = currentAllUsersFreetime[existingUserIndex].freetime;
+            const newFreetime = freetime.filter(date => !userFreetime.includes(date));
+            currentAllUsersFreetime[existingUserIndex].freetime = [...userFreetime, ...newFreetime];
+            const { data, error } = await supabase
+            .from('Events')
+            .update({
+                all_users_freetime: currentAllUsersFreetime,
+            })
+            .eq('eventID', eventID)
+            .select();
+        }
+        else{
+            // user does not exist yet, push fresh json to column
+            currentAllUsersFreetime.push({ name, freetime });
+            const { data, error } = await supabase
+            .from('Events')
+            .update({
+                all_users_freetime: currentAllUsersFreetime,
+            })
+            .eq('eventID', eventID)
+            .select();
+        }
+        
+
+        return res.status(200).json({ message: 'Freetime updated successfully.' });
     })
     
 ]
