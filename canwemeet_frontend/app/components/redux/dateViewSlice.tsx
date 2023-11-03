@@ -3,7 +3,6 @@ import type { RootState } from './store'
 
 const initialState: string="dates"
 
-
 const dateViewSlice = createSlice({
     name: 'dateView',
     initialState,

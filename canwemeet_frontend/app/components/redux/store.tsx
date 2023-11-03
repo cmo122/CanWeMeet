@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import dateViewReducer from './dateViewSlice';
+import timeGridViewReducer from './timeGridViewSlice'
 
 const store = configureStore({
   reducer: {
     dateView: dateViewReducer,
+    timeGridView: timeGridViewReducer,
   },
 });
 
