@@ -73,39 +73,26 @@ exports.updateUserFreetime=[
         .eq('eventID', eventID)
         .single();
 
-        // this is the array of all current JSON within the array
-        // {name:string, freetime:string[]}
         const currentAllUsersFreetime = eventData.all_users_freetime || [];
 
         const { name, freetime } = req.body;
         const existingUserIndex = currentAllUsersFreetime.findIndex(item => item.name === name);
 
         if(existingUserIndex  !== -1){
-            // user exists, append new freetime to existing users freetime
-            // then, update all_users_freetime with updated array
-            const userFreetime = currentAllUsersFreetime[existingUserIndex].freetime;
-            const newFreetime = freetime.filter(date => !userFreetime.includes(date));
-            currentAllUsersFreetime[existingUserIndex].freetime = [...userFreetime, ...newFreetime];
-            const { data, error } = await supabase
-            .from('Events')
-            .update({
-                all_users_freetime: currentAllUsersFreetime,
-            })
-            .eq('eventID', eventID)
-            .select();
+            // user exists, assign new freetime to existing users freetime
+            currentAllUsersFreetime[existingUserIndex].freetime=freetime;
         }
         else{
             // user does not exist yet, push fresh json to column
             currentAllUsersFreetime.push({ name, freetime });
-            const { data, error } = await supabase
-            .from('Events')
-            .update({
-                all_users_freetime: currentAllUsersFreetime,
-            })
-            .eq('eventID', eventID)
-            .select();
         }
-        
+        const { data, error } = await supabase
+        .from('Events')
+        .update({
+            all_users_freetime: currentAllUsersFreetime,
+        })
+        .eq('eventID', eventID)
+        .select();
 
         return res.status(200).json({ message: 'Freetime updated successfully.' });
     })

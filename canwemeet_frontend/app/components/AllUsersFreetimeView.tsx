@@ -78,7 +78,7 @@ export default function AllUsersFreetimeView(props: AllUsersFreetimeViewProps){
             return(
                 <div className="flex" key={index}>
                   {outerIndex === 0 && (
-                        <div className="text-xs p-1">
+                        <div className="text-xs select-none p-1">
                           {time.getMinutes() === 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:00` : ''}
                           {time.getMinutes() !== 0 ? `${time.getHours() < 10 ? '0' : ''}${time.getHours()}:${time.getMinutes()}` : ''}
                         </div>

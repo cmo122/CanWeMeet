@@ -6,13 +6,10 @@ import {createClient} from '@supabase/supabase-js'
 import '../styles/event.css'
 require('dotenv').config();
 import GlassWindow from "@/app/components/GlassWindow";
-import { useAppDispatch, useAppSelector } from "@/app/components/redux/hooks";
-import { toggleTimeGridView} from './redux/timeGridViewSlice';
+import { useAppSelector } from "@/app/components/redux/hooks";
 import AllUsersFreetimeView from "@/app/components/AllUsersFreetimeView";
 import TimeGridViewPicker from "@/app/components/TimeGridViewPicker";
 import TimeGrids from "@/app/components/TimeGrids";
-import { setSelectedTimes } from "./redux/selectedTimesSlice";
-import { time } from "console";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +33,6 @@ interface User {
 
 export default function Event() {
     const router = useRouter();
-    const dispatch = useAppDispatch();
     // Event states
     const [eventId, setEventId] = useState('');
     const [event, setEvent] = useState<any>(null);
@@ -73,7 +69,6 @@ export default function Event() {
     // Setup realtime freetime updates
     useEffect(() => {
         async function updateFreetime(){
-            console.log(selectedTimes)
             if(anonUser.name && selectedTimes.length>0){
             try{
                 const response = await fetch(`http://localhost:1234/${eventId}`,
@@ -96,7 +91,9 @@ export default function Event() {
                     }
                 }
             }
-        setTimeout(updateFreetime,1000)
+            console.log(selectedTimes)
+            updateFreetime()
+            
 
   }, [selectedTimes]);
   
@@ -171,38 +168,40 @@ export default function Event() {
               <TimeGridViewPicker/>
 
               {!isTimeGridViewEnabled && <div>
-                    <p>Users Freetime</p>
-                  <Grid styles={customGridStyles}
-                  gutter={0}>
-                    {sortedDates.map((date : string, index : number)=>{
-                      const convertDate=new Date(date)
-                      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                      const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
-                      const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
-                      return(
-                        <Grid.Col span={3}>
-                          <div key={index}>
-                              <div>
-                                <p className=" flex text-sm justify-end">{formattedDate}</p>
-                                <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
-                              </div>
-                          </div>
-                          <div>
-                            <TimeGrids
-                            outerIndex={index}
-                            date={date}
-                            eventTimes={eventTimes}
-                            user={anonUser}
-                            selectedDivs={selectedTimes}
-                            />
-                          </div>
-                        </Grid.Col>
-                      )
-                    })}
-                  </Grid>
+                <p>Users Freetime</p>
+                <Grid styles={customGridStyles}
+                gutter={0}>
+                {sortedDates.map((date : string, index : number)=>{
+                    const convertDate=new Date(date)
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
+                    const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
+                    return(
+                    <Grid.Col span={3}>
+                        <div key={index}>
+                            <div>
+                            <p className=" flex text-sm justify-end">{formattedDate}</p>
+                            <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
+                            </div>
+                        </div>
+                        <div>
+                        <TimeGrids
+                        outerIndex={index}
+                        date={date}
+                        eventTimes={eventTimes}
+                        user={anonUser}
+                        selectedDivs={selectedTimes}
+                        event={event}
+                        />
+                        </div>
+                    </Grid.Col>
+                    )
+                })}
+                </Grid>
               </div>}
 
-              {isTimeGridViewEnabled && <AllUsersFreetimeView event={event} eventTimes={eventTimes}/>}
+              {isTimeGridViewEnabled && 
+              <AllUsersFreetimeView event={event} eventTimes={eventTimes}/>}
 
             </GlassWindow>
           </div>
