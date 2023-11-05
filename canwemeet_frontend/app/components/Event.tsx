@@ -6,8 +6,8 @@ import {createClient} from '@supabase/supabase-js'
 import '../styles/event.css'
 require('dotenv').config();
 import GlassWindow from "@/app/components/GlassWindow";
-import { useAppSelector } from "@/app/components/redux/hooks";
-import AllUsersFreetimeView from "@/app/components/AllUsersFreetimeView";
+import { useAppSelector, useAppDispatch } from "@/app/components/redux/hooks";
+import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import TimeGridViewPicker from "@/app/components/TimeGridViewPicker";
 import TimeGrids from "@/app/components/TimeGrids";
 
@@ -42,8 +42,61 @@ export default function Event() {
     const [nameInput, setNameInput]=useState<string>('')
     const [anonUser, setAnonUser] = useState<User>({name:'', freetime:[]})
 
-    const isTimeGridViewEnabled = useAppSelector((state) => state.timeGridView);
+    //Redux state initialization
+    const isAllUsersViewEnabled = useAppSelector((state) => state.allUsersView);
     const selectedTimes = useAppSelector((state) => state.selectedTimes);
+    const hoverState = useAppSelector((state) => state.hoverState);
+    const sharedUsers = useAppSelector((state)=> state.sharedUsers)
+    const dispatch= useAppDispatch();
+
+    // to be fired by user
+    async function updateFreetime(){
+        if(anonUser.name && selectedTimes.length>0){
+            try{
+                const response = await fetch(`http://localhost:1234/${eventId}`,
+                {method: "POST",
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name:anonUser.name,freetime:selectedTimes})}
+            );
+
+            if(response.ok){
+                console.log(response.statusText)
+            }
+            else{
+                console.log(response.status, response.statusText)
+            }
+            }catch(error){
+                console.log(error)
+            }
+        }
+    }
+
+    // Sets event ID, then sets even state to correct row in supabase upon page load
+    useEffect(() => {
+        setEventId(router.asPath.replace(/^\/+/, ''));
+        async function fetchEventDetails() {
+            try {
+                const { data, error } = 
+                    await supabase
+                        .from('Events')
+                        .select('*')
+                        .eq('eventID', eventId)
+                        .single();
+        
+                if (error) {
+                    console.error('Error fetching event details:', error);
+                } else {
+                    setEvent(data);
+                }
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+            }
+        }
+        
+        fetchEventDetails();
+    }, [eventId, router.asPath]);
 
     // Sets time range for time grid generation
     useEffect(()=>{
@@ -62,67 +115,13 @@ export default function Event() {
           timeIntervals.push(new Date(iteratorTime))
           iteratorTime.setMinutes(iteratorTime.getMinutes() + 30)
         }
+        
       }
-      setEventTimes(timeIntervals)
+      setEventTimes(timeIntervals);
+      
     },[event])
 
-    // Setup realtime freetime updates
-    useEffect(() => {
-        async function updateFreetime(){
-            if(anonUser.name && selectedTimes.length>0){
-            try{
-                const response = await fetch(`http://localhost:1234/${eventId}`,
-                {
-                method: "POST",
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({name:anonUser.name,freetime:selectedTimes})}
-            );
-
-            if(response.ok){
-                console.log(response.statusText)
-            }
-            else{
-                console.log(response.status, response.statusText)
-            }
-            }catch(error){
-                console.log(error)
-                    }
-                }
-            }
-            console.log(selectedTimes)
-            updateFreetime()
-            
-
-  }, [selectedTimes]);
-  
-    // Sets event ID, then sets even state to correct row in supabase
-    useEffect(() => {
-        
-        setEventId(router.asPath.replace(/^\/+/, ''));
-            async function fetchEventDetails() {
-            try {
-                const { data, error } = await supabase
-                .from('Events')
-                .select('*')
-                .eq('eventID', eventId)
-                .single();
-        
-                if (error) {
-                console.error('Error fetching event details:', error);
-                } else {
-                setEvent(data);
-                }
-            } catch (error) {
-                console.error('Error fetching event details:', error);
-            }
-        }
-    
-        fetchEventDetails();
-      }, [eventId, router.asPath]);
-    
-    // sorts dates once event data is loaded
+    // sorts dates and sets user's times once event data is loaded
     useEffect(()=>{
       let newDates;
       
@@ -135,6 +134,17 @@ export default function Event() {
 
     },[event])  
 
+    // sets selectedTimes to server time once existing user name is confirmed
+    useEffect(()=>{
+        if(event){
+            const existingUser = event.all_users_freetime.find((user:User) => user.name === anonUser.name);
+            if(existingUser){
+                const userServerFreetime = existingUser.freetime;
+                dispatch(setSelectedTimes(userServerFreetime))
+            }
+        }
+    }, [anonUser])
+
     // Sets user details upon entering name
     const handleSubmit: React.FormEventHandler = (e) => {
       e.preventDefault();
@@ -146,62 +156,57 @@ export default function Event() {
         {event && sortedDates ? (
           <div className="flex flex-grow  justify-center">
             <GlassWindow >
-              <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
+            <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
 
-              <div className="rounded-lg border border-sky-500 m-2">{window.location.href}
+            <div className="rounded-lg border border-sky-500 m-2">{window.location.href}
                 <button className="rounded-lg border-solid border border-sky-500 p-1 m-5">Copy Link</button>
-              </div>
+            </div>
 
-              {anonUser.name==='' && 
-              <form onSubmit={handleSubmit}>
-                <TextInput
-                label="Enter name to start entering dates: "
-                placeholder="John Doe"
-                onChange={(e) => setNameInput(e.target.value)}
-                />
-                
-                <Button type='submit' className="bg-blue-500 m-2">Sign In</Button>
-              </form>}
+            {anonUser.name==='' && 
+            <form onSubmit={handleSubmit}>
+            <TextInput
+            label="Enter name to start entering dates: "
+            placeholder="John Doe"
+            onChange={(e) => setNameInput(e.target.value)}
+            />
+            
+            <Button type='submit' className="bg-blue-500 m-2">Sign In</Button>
+            </form>}
 
-              {anonUser && <div>{anonUser.name}</div>}
+            {anonUser && <div>{anonUser.name}</div>}
 
-              <TimeGridViewPicker/>
-
-              {!isTimeGridViewEnabled && <div>
-                <p>Users Freetime</p>
-                <Grid styles={customGridStyles}
-                gutter={0}>
+            <TimeGridViewPicker/>
+            
+            <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>Update Freetime</Button>
+            {hoverState && <div>{sharedUsers}</div>}
+            {isAllUsersViewEnabled && <p>All Users Freetime</p>}
+            {!isAllUsersViewEnabled && <p>Users Freetime</p>}
+            <Grid styles={customGridStyles}
+            gutter={0}>
                 {sortedDates.map((date : string, index : number)=>{
                     const convertDate=new Date(date)
                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                     const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
                     const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
                     return(
-                    <Grid.Col span={3}>
-                        <div key={index}>
-                            <div>
+                    <Grid.Col span={3} key={index}>
+                        <div>
                             <p className=" flex text-sm justify-end">{formattedDate}</p>
                             <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
-                            </div>
                         </div>
                         <div>
-                        <TimeGrids
-                        outerIndex={index}
-                        date={date}
-                        eventTimes={eventTimes}
-                        user={anonUser}
-                        selectedDivs={selectedTimes}
-                        event={event}
-                        />
+                            <TimeGrids
+                            outerIndex={index}
+                            date={date}
+                            eventTimes={eventTimes}
+                            user={anonUser}
+                            event={event}
+                            />
                         </div>
                     </Grid.Col>
                     )
                 })}
-                </Grid>
-              </div>}
-
-              {isTimeGridViewEnabled && 
-              <AllUsersFreetimeView event={event} eventTimes={eventTimes}/>}
+            </Grid>
 
             </GlassWindow>
           </div>

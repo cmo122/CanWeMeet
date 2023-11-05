@@ -1,15 +1,13 @@
-import Layout from '../app/components/Layout'
+import Layout from './Layout'
 import TimesDropdown from '@/app/components/TimesDropdown';
 import DateFormatPicker from '@/app/components/DateFormatPicker';
 import DateSelectorElement from '@/app/components/DateSelectorElement';
-import '../app/styles/input.css'
-import '../app/styles/background.css'
-import '../app/styles/calendar.css'
-import { Provider } from 'react-redux';
-import store from '../app/components/redux/store';
+import '../styles/input.css'
+import '../styles/background.css'
+import '../styles/calendar.css'
 import { useForm, SubmitHandler  } from "react-hook-form";
 import React, {  useEffect, useState } from 'react';
-import { useAppSelector } from '../app/components/redux/hooks';
+import { useAppSelector } from './redux/hooks';
 import GlassWindow from '@/app/components/GlassWindow';
 
 
@@ -24,7 +22,7 @@ interface IFormInput {
 }
 
 export default function App() {
-  const dateView = useAppSelector((state) => state.dateView);
+  const dateView = useAppSelector((state) => state.dateView || '');
 
   const defaultFormData: IFormInput = {
     eventName: "",
@@ -77,7 +75,6 @@ export default function App() {
   },[dateView])
   
   return (
-    <Provider store={store}>
           <Layout>
           <div id='mainContent' className="flex flex-col flex-grow justify-center items-center min-h-screen max-md:max-w-[20rem]">
           <GlassWindow>
@@ -102,7 +99,6 @@ export default function App() {
           </GlassWindow>
           </div>
           </Layout>
-  </Provider>
     )
   }
   

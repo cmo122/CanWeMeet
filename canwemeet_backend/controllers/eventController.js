@@ -77,10 +77,12 @@ exports.updateUserFreetime=[
 
         const { name, freetime } = req.body;
         const existingUserIndex = currentAllUsersFreetime.findIndex(item => item.name === name);
-
+        // create buffer using set to ensure no duplicates
+        const uniqueFreetimeSet = new Set(freetime);
+        const uniqueFreetimeArray = Array.from(uniqueFreetimeSet);
         if(existingUserIndex  !== -1){
-            // user exists, assign new freetime to existing users freetime
-            currentAllUsersFreetime[existingUserIndex].freetime=freetime;
+            // user exists, append new freetime to existing users freetime
+            currentAllUsersFreetime[existingUserIndex].freetime=uniqueFreetimeArray;
         }
         else{
             // user does not exist yet, push fresh json to column

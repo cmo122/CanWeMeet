@@ -1,12 +1,12 @@
 import React from "react";
 import { useAppDispatch, useAppSelector } from '@/app/components/redux/hooks';
-import { toggleTimeGridView } from "./redux/timeGridViewSlice";
+import { toggleAllUsersView } from "./redux/allUsersViewSlice";
 import { Button } from "@mantine/core";
 
 export default function TimeGridViewPicker() {
     const dispatch = useAppDispatch();
     const handleGridViewChange = () => {
-        dispatch(toggleTimeGridView());
+        dispatch(toggleAllUsersView());
 
       };
     

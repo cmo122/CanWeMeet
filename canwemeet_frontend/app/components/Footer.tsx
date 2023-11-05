@@ -1,4 +1,3 @@
-import { link } from 'fs';
 import githublogo from '../components/icons/github-mark/github-mark.png'
 import linkedinlogo from '../components/icons/LinkedIn-Logos/LI-In-Bug.png'
 import Image from 'next/image';

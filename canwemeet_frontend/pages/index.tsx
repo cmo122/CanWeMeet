@@ -2,7 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import { Provider } from 'react-redux';
 import store from '../app/components/redux/store';
-import App from './app';
+import App from '../app/components/app';
 
 
 export default function Index() {

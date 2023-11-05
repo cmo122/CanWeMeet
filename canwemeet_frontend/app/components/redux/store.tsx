@@ -1,13 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit'
 import dateViewReducer from './dateViewSlice';
-import timeGridViewReducer from './timeGridViewSlice'
+import allUsersViewReducer from './allUsersViewSlice'
 import selectedTimesReducer from './selectedTimesSlice'
+import hoverStateReducer from './hoverStateSlice'
+import sharedUsersReducer from './sharedUsersSlice'
 
 const store = configureStore({
   reducer: {
     dateView: dateViewReducer,
-    timeGridView: timeGridViewReducer,
-    selectedTimes: selectedTimesReducer
+    allUsersView: allUsersViewReducer,
+    selectedTimes: selectedTimesReducer,
+    hoverState: hoverStateReducer,
+    sharedUsers: sharedUsersReducer
   },
 });
 

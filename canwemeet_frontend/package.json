@@ -46,5 +46,10 @@
     "typescript": "5.1.6",
     "typewriter-effect": "^2.20.1",
     "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "css-loader": "^6.8.1",
+    "file-loader": "^6.2.0",
+    "style-loader": "^3.3.3"
   }
 }
