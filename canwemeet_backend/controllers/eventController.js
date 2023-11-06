@@ -30,9 +30,9 @@ function formatAsTimePG(timeString, timeMeridiem) {
 
 exports.createEvent = [
     asyncHandler(async (req, res, next) => {
-        const hashids = new Hashids()
+        const salt = Date.now().toString();
+        const hashids = new Hashids(salt, 6)
         const newURL=hashids.encode(1,2,3)
-        console.log("Request body", req.body)
         const initialTimeConverted= formatAsTimePG(req.body.initialTime, req.body.initialTimeMeridiem)
         const finalTimeConverted= formatAsTimePG(req.body.finalTime, req.body.finalTimeMeridiem)
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -46,7 +46,8 @@ exports.createEvent = [
             timezone:userTimezone,
             dates_format: dates_format,
             dates: req.body.dates,
-            days: req.body.days
+            days: req.body.days,
+            all_users_freetime:[]
         }
         const { data, error } = await supabase
         .from('Events')

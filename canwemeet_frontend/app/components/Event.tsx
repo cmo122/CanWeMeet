@@ -178,9 +178,8 @@ export default function Event() {
             <TimeGridViewPicker/>
             
             <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>Update Freetime</Button>
-            {hoverState && <div>{sharedUsers}</div>}
-            {isAllUsersViewEnabled && <p>All Users Freetime</p>}
-            {!isAllUsersViewEnabled && <p>Users Freetime</p>}
+            {hoverState ? <div>{sharedUsers.length>0 ? sharedUsers:'None'}</div>:<div>Hover over times to see users</div>}
+            {isAllUsersViewEnabled ? <p>All Users Freetime</p>:<p>Users Freetime</p>}
             <Grid styles={customGridStyles}
             gutter={0}>
                 {sortedDates.map((date : string, index : number)=>{

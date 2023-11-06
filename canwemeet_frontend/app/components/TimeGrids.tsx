@@ -5,6 +5,8 @@ import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import { setHoverStateView } from "./redux/hoverStateSlice";
 import { setSharedUsers } from "./redux/sharedUsersSlice";
 import check from './icons/check.svg'
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 interface User {
     name: string;
@@ -50,7 +52,7 @@ export default function TimeGrids(props:TimeGridProps){
   // sets buffer for selectedTimes redux state
   useEffect(() => {
     setSelectedTimesBuffer(selectedTimes);
-  }, [selectedTimes]);
+  });
 
   // all mouse functions that handle dragover logic
   // ***
@@ -116,6 +118,7 @@ export default function TimeGrids(props:TimeGridProps){
       } 
       
       const sharedUsers=userNames.join(', ')
+      const percentage = (userNames.length/props.event.all_users_freetime.length)*100;
       return(
           <div className="flex" key={index}>
             {props.outerIndex === 0 && (
@@ -128,7 +131,7 @@ export default function TimeGrids(props:TimeGridProps){
               <div
               id={id} 
               className={`w-12 h-6 border border-black flex items-center justify-center`}
-              style={{ backgroundImage: isTimeSelected ? `url(${check.src})` : "none",
+              style={{ backgroundImage: isTimeSelected && !isAllUsersViewEnabled ? `url(${check.src})` : "none",
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat', 
               backgroundSize: '50%', }}
@@ -140,6 +143,20 @@ export default function TimeGrids(props:TimeGridProps){
               onMouseEnter={() => handleMouseEnter(id, sharedUsers)}
               onMouseOut={()=>handleMouseOut()}
               >
+              {isTimeSelected && isAllUsersViewEnabled && <div style={{ 
+                width: 20, 
+                height: 20,
+                position: 'relative',
+                zIndex: -999,
+                 }}>
+                <CircularProgressbar value={percentage} strokeWidth={50}
+                 styles={buildStyles({
+                  strokeLinecap: "butt"
+                })}
+                background
+                backgroundPadding={6}
+               />
+               </div>}
               </div>
             </div>
           </div>
