@@ -45,14 +45,6 @@ export default function TimeGrids(props:TimeGridProps){
 
   // Mouse state
   const [mouseIsDown, setMouseIsDown] = useState(false);
-  
-  // buffer state
-  const [selectedTimesBuffer, setSelectedTimesBuffer] = useState<string[]>([]);
-
-  // sets buffer for selectedTimes redux state
-  useEffect(() => {
-    setSelectedTimesBuffer(selectedTimes);
-  });
 
   // all mouse functions that handle dragover logic
   // ***
@@ -100,25 +92,31 @@ export default function TimeGrids(props:TimeGridProps){
     <Grid.Col>
     {props.eventTimes.map((time:Date, index:number) => {
       let isTimeSelected:boolean=false;
+      let percentage=0;
       const userNames: string[] = [];
       const id:string = `${month},${day},${year}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
-      if(isAllUsersViewEnabled){
-        // if true, loop through every user in all_users_freetime and show their freetimes on the grid
+      if(isAllUsersViewEnabled && props.event){
+        // if true and event exists, loop through every user in all_users_freetime and show their freetimes on the grid
         // store all users sharing the same time slot to userNames array, then assign it to data-names
         props.event.all_users_freetime.forEach((user:any,index:number)=>{
-          if (user.freetime.includes(id)) {
-            isTimeSelected = true;
-            userNames.push(user.name)
-          }
+          // if user exists on element
+          if(user.freetime){
+            // and their freetime has the current div time included
+            if(user.freetime.includes(id)){
+              // update time values
+              isTimeSelected = true;
+              userNames.push(user.name)
+            }}
         })
+        percentage = (userNames.length/props.event.all_users_freetime.length)*100;
       }
       else{
         // else, render only the current users freetime
-        isTimeSelected = selectedTimesBuffer.includes(id);
+        isTimeSelected = selectedTimes.includes(id);
       } 
       
       const sharedUsers=userNames.join(', ')
-      const percentage = (userNames.length/props.event.all_users_freetime.length)*100;
+      // const percentage = (userNames.length/props.event.all_users_freetime.length)*100;
       return(
           <div className="flex" key={index}>
             {props.outerIndex === 0 && (

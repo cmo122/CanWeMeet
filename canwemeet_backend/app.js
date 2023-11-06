@@ -1,21 +1,15 @@
 const createError = require('http-errors');
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config();
-const bcrypt = require('bcrypt')
-const passport = require('passport');
 const session = require("express-session");
-const LocalStrategy = require('passport-local').Strategy;
 const cors = require('cors');
 var indexRouter = require('./routes/index');
-var cors_proxy = require('cors-anywhere');
+const {createClient}= require('@supabase/supabase-js')
 
 // Create the express app
 const app = express()
-
-// Error handlers
 
 app.use(cors({ origin: 'http://localhost:3000' }));
 

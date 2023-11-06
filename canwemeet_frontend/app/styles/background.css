@@ -1,17 +1,4 @@
 .background-animation {
-    background: linear-gradient(0.33turn, #9b271f, #3a0d57, #16236b, #993605 );
-    background-size: 400% 400%;
-    animation: gradientshift 12s ease infinite;
-
-    @media screen and (max-width: 768px) {
-            background: linear-gradient(0.33turn, #16236b, #993605);
-            background-size: 100% 100%; 
-            animation: none; 
-    }
-}
-
-@keyframes gradientshift {
-    0%   { background-position: 0%   50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0%   50%; }
+    background: linear-gradient(0.33turn,  #16236b, #993605 );
+    background-size: 100% 100%;
 }

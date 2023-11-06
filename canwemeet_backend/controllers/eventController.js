@@ -1,4 +1,3 @@
-const { body, validationResult } = require("express-validator");
 const asyncHandler = require("express-async-handler");
 require('dotenv').config();
 const Hashids= require('hashids/cjs')
@@ -97,8 +96,26 @@ exports.updateUserFreetime=[
         .eq('eventID', eventID)
         .select();
 
-        return res.status(200).json({ message: 'Freetime updated successfully.' });
+        return res.status(200).json(data);
     })
     
 ]
     
+exports.fetchEvent=[
+    asyncHandler(async (req, res, next) => {
+        console.log(req.params.eventID)
+        const { data, error } = 
+            await supabase
+                .from('Events')
+                .select('*')
+                .eq('eventID', req.params.eventID)
+                .single();
+        if(error) return res.status(500).json({message: "Could not obtain event"})
+
+        if (data) {
+            res.status(200).json(data);
+          } else {
+            res.status(404).json({ message: "Event not found" });
+          }
+    })
+]

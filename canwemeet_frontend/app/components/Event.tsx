@@ -2,7 +2,6 @@ import React, {useState,useEffect, FormEventHandler} from "react";
 import { Grid, TextInput, Button } from '@mantine/core';
 import { useRouter } from 'next/router';
 import Layout from './Layout'
-import {createClient} from '@supabase/supabase-js'
 import '../styles/event.css'
 require('dotenv').config();
 import GlassWindow from "@/app/components/GlassWindow";
@@ -12,8 +11,6 @@ import TimeGridViewPicker from "@/app/components/TimeGridViewPicker";
 import TimeGrids from "@/app/components/TimeGrids";
 
 export const dynamic = "force-dynamic";
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 const customGridStyles = {
   root: {
@@ -33,6 +30,7 @@ interface User {
 
 export default function Event() {
     const router = useRouter();
+    
     // Event states
     const [eventId, setEventId] = useState('');
     const [event, setEvent] = useState<any>(null);
@@ -49,7 +47,7 @@ export default function Event() {
     const sharedUsers = useAppSelector((state)=> state.sharedUsers)
     const dispatch= useAppDispatch();
 
-    // to be fired by user
+    // to be fired by user, updates event state once finished
     async function updateFreetime(){
         if(anonUser.name && selectedTimes.length>0){
             try{
@@ -62,7 +60,8 @@ export default function Event() {
             );
 
             if(response.ok){
-                console.log(response.statusText)
+                const eventData = await response.json();
+                setEvent(eventData[0])
             }
             else{
                 console.log(response.status, response.statusText)
@@ -77,25 +76,30 @@ export default function Event() {
     useEffect(() => {
         setEventId(router.asPath.replace(/^\/+/, ''));
         async function fetchEventDetails() {
-            try {
-                const { data, error } = 
-                    await supabase
-                        .from('Events')
-                        .select('*')
-                        .eq('eventID', eventId)
-                        .single();
-        
-                if (error) {
-                    console.error('Error fetching event details:', error);
-                } else {
-                    setEvent(data);
-                }
-            } catch (error) {
-                console.error('Error fetching event details:', error);
+            try{
+                const response = await fetch(`http://localhost:1234/${eventId}`,
+                {method: "GET",
+                headers: {
+                'Content-Type': 'application/json',
+                }}
+            );
+
+            if(response.ok){
+                const eventData = await response.json();
+                setEvent(eventData)
+            }
+            else{
+                console.log(response.status, response.statusText)
+            }
+            }catch(error){
+                console.log(error)
             }
         }
+        //if eventId is confirmed, fetch details
+        if(eventId){
+            fetchEventDetails();
+        }
         
-        fetchEventDetails();
     }, [eventId, router.asPath]);
 
     // Sets time range for time grid generation
@@ -121,7 +125,7 @@ export default function Event() {
       
     },[event])
 
-    // sorts dates and sets user's times once event data is loaded
+    // sorts dates and sets user's times to sorted dates once event data is loaded
     useEffect(()=>{
       let newDates;
       
@@ -143,7 +147,7 @@ export default function Event() {
                 dispatch(setSelectedTimes(userServerFreetime))
             }
         }
-    }, [anonUser])
+    }, [anonUser, event])
 
     // Sets user details upon entering name
     const handleSubmit: React.FormEventHandler = (e) => {
