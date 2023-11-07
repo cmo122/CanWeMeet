@@ -13,7 +13,7 @@ export default function TimeGridViewPicker() {
     return (
         <div className="flex flex-col justify-center items-center">
             <Button onClick={handleGridViewChange} className="bg-blue-500 m-2">
-                {allUsersView ? <div>All Users View</div> : <div>User View</div>}
+                {allUsersView ? <div>All Users Freetimes</div> : <div>Your Freetimes</div>}
             </Button>
         </div>
     )

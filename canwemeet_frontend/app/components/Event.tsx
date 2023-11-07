@@ -1,16 +1,17 @@
 import React, {useState,useEffect, FormEventHandler} from "react";
 import { Grid, TextInput, Button } from '@mantine/core';
 import { useRouter } from 'next/router';
+import Image from "next/image";
 import Layout from './Layout'
 import '../styles/event.css'
+import '../styles/loading.css'
 require('dotenv').config();
 import GlassWindow from "@/app/components/GlassWindow";
 import { useAppSelector, useAppDispatch } from "@/app/components/redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import TimeGridViewPicker from "@/app/components/TimeGridViewPicker";
 import TimeGrids from "@/app/components/TimeGrids";
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
+import checkCircle from './icons/check_circle.svg'
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export default function Event() {
     const [sortedDates, setSortedDates] = useState<any>([])
     const [days, setDays] = useState<any>([])
     const [confirmAnimation, setConfirmAnimation]= useState<boolean>(false)
+    const [loadingAnimation, setLoadingAnimation]= useState<boolean>(false)
     // User states
     const [nameInput, setNameInput]=useState<string>('')
     const [anonUser, setAnonUser] = useState<User>({name:'', freetime:[]})
@@ -48,18 +50,11 @@ export default function Event() {
     const isAllUsersViewEnabled = useAppSelector((state) => state.allUsersView);
     const selectedTimes = useAppSelector((state) => state.selectedTimes);
     const mostSharedTimes=useAppSelector((state)=>state.mostSharedTimes)
-    const formattedArray = mostSharedTimes.dates.map((dateTimeString) => {
-        const [datePart, timePart] = dateTimeString.split("_");
-        const [month, day, year] = datePart.split(",");
-        const [hour, minute] = timePart.split(":");
-        const formattedDate = `${month} ${day}, ${year}`;
-        const formattedTime = `${hour}:${minute}`;
-        return `${formattedDate} at ${formattedTime}`;
-      });
     const dispatch= useAppDispatch();
 
     // to be fired by user, updates event state once finished
     async function updateFreetime(){
+      setLoadingAnimation(true)
         if(anonUser.name && selectedTimes.length>0){
             try{
                 const response = await fetch(`http://localhost:1234/${eventId}`,
@@ -83,6 +78,7 @@ export default function Event() {
                 console.log(error)
             }
         }
+        setLoadingAnimation(false)
     }
 
     // Sets event ID, then sets even state to correct row in supabase upon page load
@@ -201,10 +197,28 @@ export default function Event() {
             </form>}
 
             {anonUser && <div>{anonUser.name}</div>}
-
-            
-            
-            <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>Update Freetime</Button>
+            <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>
+            {loadingAnimation ? (
+              <div className="sk-circle">
+                <div className="sk-circle1 sk-child"></div>
+                <div className="sk-circle2 sk-child"></div>
+                <div className="sk-circle3 sk-child"></div>
+                <div className="sk-circle4 sk-child"></div>
+                <div className="sk-circle5 sk-child"></div>
+                <div className="sk-circle6 sk-child"></div>
+                <div className="sk-circle7 sk-child"></div>
+                <div className="sk-circle8 sk-child"></div>
+                <div className="sk-circle9 sk-child"></div>
+                <div className="sk-circle10 sk-child"></div>
+                <div className="sk-circle11 sk-child"></div>
+                <div className="sk-circle12 sk-child"></div>
+            </div>
+            ) : confirmAnimation ? (
+              <Image src={checkCircle} alt="Check circle" className="confirm-animation" />
+            ) : (
+              'Update Freetime'
+            )}
+            </Button>
             <p>Current time grid view:</p>
             <TimeGridViewPicker/>
             <Grid styles={customGridStyles}

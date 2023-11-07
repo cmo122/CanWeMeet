@@ -4,7 +4,6 @@ import { useAppSelector, useAppDispatch } from "./redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import { setHoverStateView } from "./redux/hoverStateSlice";
 import { setSharedUsers } from "./redux/sharedUsersSlice";
-import { setMostSharedTimes } from "./redux/mostSharedTimeSlice";
 import check from './icons/check.svg'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';

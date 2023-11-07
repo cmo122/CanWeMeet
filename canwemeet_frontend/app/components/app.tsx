@@ -41,24 +41,46 @@ export default function App() {
     handleSubmit,
     control,
     reset,
+    setError, 
     formState: { errors },
   } = useForm<IFormInput>({
     defaultValues: formData, 
   });
 
+  function formatAsTimePG(timeString:string, timeMeridiem:string) {
+    if(timeString){
+        const timeParts = timeString.split(':');
+        let hour = parseInt(timeParts[0]);
+    
+        if (timeMeridiem === 'pm' && hour < 12) {
+            hour += 12;
+        }
+        
+        const formattedHour = hour < 10 ? '0' + hour : hour.toString();
+
+        const formattedTimePG = `${formattedHour}:${timeParts[1]}`;
+    
+        return formattedTimePG;
+    }
+  }
+
   const onSubmitCustom: SubmitHandler<IFormInput>= async (data:any) => {
-    await fetch('http://localhost:1234', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+
+    const result = validateTimeOrder(data.initialTime, data.finalTime, data.initialTimeMeridiem, data.finalTimeMeridiem);
+
+    if(result){
+      await fetch('http://localhost:1234', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
-    })
+        body: JSON.stringify(data),
+      })
       .then(async (response) => {
         if (response.status === 200) {
           const responseData = await response.json();
           const newURL = responseData.newURL;
-  
+
           window.location.href = newURL;
         } else {
           console.log("Error: ", response);
@@ -67,13 +89,36 @@ export default function App() {
       .catch((error) => {
         console.log(error)
       });
+    }
+      
 }
 
   useEffect(() => {
     reset(defaultFormData);
       
   },[dateView])
-  
+
+  // time validation rule
+  const validateTimeOrder = (initialTime:string, finalTime:string, initialTimeMeridiem:string, finalTimeMeridiem:string) => {
+    const initialTimeDate = formatAsTimePG(initialTime, initialTimeMeridiem) || ""
+    const finalTimeDate = formatAsTimePG(finalTime, finalTimeMeridiem) || ""
+    if (initialTimeDate> finalTimeDate) {
+      setError('initialTime', {
+        type: 'manual',
+        message: 'Initial time should be earlier than final time',
+      });
+        return false;
+    } 
+    else if (initialTimeDate === finalTimeDate) {
+        setError('finalTime', {
+          type: 'manual',
+          message: 'Initial time and final time cannot be the same',
+        });
+        return false;
+    }
+    return true;
+  };
+
   return (
           <Layout>
           <div id='mainContent' className="flex flex-col flex-grow justify-center items-center min-h-screen max-md:max-w-[20rem]">
@@ -88,7 +133,9 @@ export default function App() {
                 </div>
                 <h1 className='text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]'>What times will work?</h1>
                 <TimesDropdown timeType='initialTime' register={register}/>
+                {errors.initialTime && <p className="error-message">{errors.initialTime.message}</p>}
                 <TimesDropdown timeType='finalTime' register={register}/>
+                {errors.finalTime && <p className="error-message">{errors.finalTime.message}</p>}
                 <DateFormatPicker/>
                 <DateSelectorElement control={control}/>
                 <button type="submit" className='rounded-lg p-4 m-4 border border-solid border-black text-white

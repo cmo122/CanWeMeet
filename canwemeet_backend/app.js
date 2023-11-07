@@ -6,7 +6,6 @@ require('dotenv').config();
 const session = require("express-session");
 const cors = require('cors');
 var indexRouter = require('./routes/index');
-const {createClient}= require('@supabase/supabase-js')
 
 // Create the express app
 const app = express()
