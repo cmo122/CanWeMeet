@@ -4,6 +4,7 @@ import allUsersViewReducer from './allUsersViewSlice'
 import selectedTimesReducer from './selectedTimesSlice'
 import hoverStateReducer from './hoverStateSlice'
 import sharedUsersReducer from './sharedUsersSlice'
+import mostSharedTimeReducer from './mostSharedTimeSlice'
 
 const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ const store = configureStore({
     allUsersView: allUsersViewReducer,
     selectedTimes: selectedTimesReducer,
     hoverState: hoverStateReducer,
-    sharedUsers: sharedUsersReducer
+    sharedUsers: sharedUsersReducer,
+    mostSharedTimes:mostSharedTimeReducer
   },
 });
 

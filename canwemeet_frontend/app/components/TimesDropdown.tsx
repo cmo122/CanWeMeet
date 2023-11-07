@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react"
-import PropTypes, { InferProps } from 'prop-types';
-import { useForm, Controller, useFieldArray, SubmitHandler  } from "react-hook-form";
 
 interface props{
     timeType: string

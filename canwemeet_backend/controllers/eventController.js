@@ -103,7 +103,6 @@ exports.updateUserFreetime=[
     
 exports.fetchEvent=[
     asyncHandler(async (req, res, next) => {
-        console.log(req.params.eventID)
         const { data, error } = 
             await supabase
                 .from('Events')

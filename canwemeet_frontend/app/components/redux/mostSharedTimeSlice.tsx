@@ -1,16 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-const initialState: string=""
+interface sharedTimes{
+    names:string[];
+    dates:string []
+}
 
-const mostSharedTimeSlice = createSlice({
-    name: 'mostSharedTime',
+const initialState: sharedTimes= {names:[], dates: []}
+
+const mostSharedTimesSlice = createSlice({
+    name: 'mostSharedTimes',
     initialState,
     reducers: {
-      setMostSharedTime: (state, action: PayloadAction<string>) => {
+      setMostSharedTimes: (state, action: PayloadAction<sharedTimes>) => {
         return action.payload;
       },
     },
   });
   
-  export const { setMostSharedTime } = mostSharedTimeSlice.actions;
-  export default mostSharedTimeSlice.reducer;
+  export const { setMostSharedTimes } = mostSharedTimesSlice.actions;
+  export default mostSharedTimesSlice.reducer;

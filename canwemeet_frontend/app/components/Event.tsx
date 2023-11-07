@@ -9,6 +9,8 @@ import { useAppSelector, useAppDispatch } from "@/app/components/redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import TimeGridViewPicker from "@/app/components/TimeGridViewPicker";
 import TimeGrids from "@/app/components/TimeGrids";
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,8 @@ export default function Event() {
     const [event, setEvent] = useState<any>(null);
     const [eventTimes, setEventTimes]=useState<any>([])
     const [sortedDates, setSortedDates] = useState<any>([])
+    const [days, setDays] = useState<any>([])
+    const [confirmAnimation, setConfirmAnimation]= useState<boolean>(false)
     // User states
     const [nameInput, setNameInput]=useState<string>('')
     const [anonUser, setAnonUser] = useState<User>({name:'', freetime:[]})
@@ -43,8 +47,15 @@ export default function Event() {
     //Redux state initialization
     const isAllUsersViewEnabled = useAppSelector((state) => state.allUsersView);
     const selectedTimes = useAppSelector((state) => state.selectedTimes);
-    const hoverState = useAppSelector((state) => state.hoverState);
-    const sharedUsers = useAppSelector((state)=> state.sharedUsers)
+    const mostSharedTimes=useAppSelector((state)=>state.mostSharedTimes)
+    const formattedArray = mostSharedTimes.dates.map((dateTimeString) => {
+        const [datePart, timePart] = dateTimeString.split("_");
+        const [month, day, year] = datePart.split(",");
+        const [hour, minute] = timePart.split(":");
+        const formattedDate = `${month} ${day}, ${year}`;
+        const formattedTime = `${hour}:${minute}`;
+        return `${formattedDate} at ${formattedTime}`;
+      });
     const dispatch= useAppDispatch();
 
     // to be fired by user, updates event state once finished
@@ -62,6 +73,8 @@ export default function Event() {
             if(response.ok){
                 const eventData = await response.json();
                 setEvent(eventData[0])
+                setConfirmAnimation(true)
+                setTimeout(()=>setConfirmAnimation(false),1000)
             }
             else{
                 console.log(response.status, response.statusText)
@@ -126,15 +139,20 @@ export default function Event() {
     },[event])
 
     // sorts dates and sets user's times to sorted dates once event data is loaded
+    // if days is selected, sets days state
     useEffect(()=>{
       let newDates;
-      
-      if(event) {
-        newDates= event.dates
-        .map((dateStr:string) => new Date(dateStr))
-        .sort((a:any,b:any)=> a-b);
+      if(event){
+        if(event.dates.length>0) {
+          newDates= event.dates
+          .map((dateStr:string) => new Date(dateStr))
+          .sort((a:any,b:any)=> a-b);
+          setSortedDates(newDates)
+        }
+        else{
+          setDays(event.days)
+        }
       }
-      setSortedDates(newDates)
 
     },[event])  
 
@@ -158,12 +176,17 @@ export default function Event() {
     return (
         <Layout>
         {event && sortedDates ? (
-          <div className="flex flex-grow  justify-center">
+          <div className="flex justify-center items-center">
             <GlassWindow >
             <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
 
-            <div className="rounded-lg border border-sky-500 m-2">{window.location.href}
-                <button className="rounded-lg border-solid border border-sky-500 p-1 m-5">Copy Link</button>
+            <div className="rounded-lg border border-sky-500 m-2 overflow:auto">{window.location.href}
+                <button className={`rounded-lg border-solid border border-sky-500 p-1 m-5 
+                `}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                }}
+                >Copy Link</button>
             </div>
 
             {anonUser.name==='' && 
@@ -179,14 +202,14 @@ export default function Event() {
 
             {anonUser && <div>{anonUser.name}</div>}
 
-            <TimeGridViewPicker/>
+            
             
             <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>Update Freetime</Button>
-            {hoverState ? <div>{sharedUsers.length>0 ? sharedUsers:'None'}</div>:<div>Hover over times to see users</div>}
-            {isAllUsersViewEnabled ? <p>All Users Freetime</p>:<p>Users Freetime</p>}
+            <p>Current time grid view:</p>
+            <TimeGridViewPicker/>
             <Grid styles={customGridStyles}
             gutter={0}>
-                {sortedDates.map((date : string, index : number)=>{
+                {sortedDates.length>0 && sortedDates.map((date : string, index : number)=>{
                     const convertDate=new Date(date)
                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                     const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
@@ -197,7 +220,25 @@ export default function Event() {
                             <p className=" flex text-sm justify-end">{formattedDate}</p>
                             <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
                         </div>
+                        <div className="flex">
+                            <TimeGrids
+                            outerIndex={index}
+                            date={date}
+                            eventTimes={eventTimes}
+                            user={anonUser}
+                            event={event}
+                            />
+                        </div>
+                    </Grid.Col>
+                    )
+                })}
+                {days.length>0 && days.map((date : string, index : number)=>{
+                    return(
+                    <Grid.Col span={3} key={index}>
                         <div>
+                            <p className=" flex text-sm justify-end">{date}</p>
+                        </div>
+                        <div className="flex">
                             <TimeGrids
                             outerIndex={index}
                             date={date}

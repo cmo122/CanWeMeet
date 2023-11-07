@@ -7,12 +7,14 @@ export default function TimeGridViewPicker() {
     const dispatch = useAppDispatch();
     const handleGridViewChange = () => {
         dispatch(toggleAllUsersView());
-
       };
+    const allUsersView=useAppSelector((state)=>state.allUsersView)  
     
     return (
         <div className="flex flex-col justify-center items-center">
-            <Button onClick={handleGridViewChange} className="bg-blue-500 m-2">Toggle View</Button>
+            <Button onClick={handleGridViewChange} className="bg-blue-500 m-2">
+                {allUsersView ? <div>All Users View</div> : <div>User View</div>}
+            </Button>
         </div>
     )
 }
