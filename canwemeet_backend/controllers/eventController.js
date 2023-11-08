@@ -26,16 +26,16 @@ function formatAsTimePG(timeString, timeMeridiem) {
     }
   }
 
-
 exports.createEvent = [
     asyncHandler(async (req, res, next) => {
+        // create new URL
         const salt = Date.now().toString();
         const hashids = new Hashids(salt, 6)
         const newURL=hashids.encode(1,2,3)
+        // convert form values into UTC time
         const initialTimeConverted= formatAsTimePG(req.body.initialTime, req.body.initialTimeMeridiem)
         const finalTimeConverted= formatAsTimePG(req.body.finalTime, req.body.finalTimeMeridiem)
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const dates_format = Array.isArray(req.body.dates) && req.body.dates.length > 0;
+        const userTimezone = req.body.timezone
 
         const sbData={
             eventID: newURL,
@@ -43,7 +43,6 @@ exports.createEvent = [
             initialTime: initialTimeConverted,
             finalTime: finalTimeConverted,
             timezone:userTimezone,
-            dates_format: dates_format,
             dates: req.body.dates,
             days: req.body.days,
             all_users_freetime:[]
@@ -75,7 +74,7 @@ exports.updateUserFreetime=[
 
         const currentAllUsersFreetime = eventData.all_users_freetime || [];
 
-        const { name, freetime } = req.body;
+        const { name, timezone, freetime } = req.body;
         const existingUserIndex = currentAllUsersFreetime.findIndex(item => item.name === name);
         // create buffer using set to ensure no duplicates
         const uniqueFreetimeSet = new Set(freetime);
@@ -86,7 +85,7 @@ exports.updateUserFreetime=[
         }
         else{
             // user does not exist yet, push fresh json to column
-            currentAllUsersFreetime.push({ name, freetime });
+            currentAllUsersFreetime.push({ name, timezone, freetime });
         }
         const { data, error } = await supabase
         .from('Events')

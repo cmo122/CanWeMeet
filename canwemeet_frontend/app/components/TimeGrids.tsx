@@ -4,13 +4,24 @@ import { useAppSelector, useAppDispatch } from "./redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import { setHoverStateView } from "./redux/hoverStateSlice";
 import { setSharedUsers } from "./redux/sharedUsersSlice";
+import { useRouter } from 'next/router';
 import check from './icons/check.svg'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { DateTime } from 'luxon';
+
+interface CustomDateTimeFormatOptions extends Intl.DateTimeFormatOptions {
+  year?: 'numeric' | '2-digit'; // Define year as a valid option
+  month?: 'numeric' | '2-digit' | 'short' | 'long'; // Define month as a valid option
+  day?: 'numeric' | '2-digit'; // Define day as a valid option
+  hour?: 'numeric' | '2-digit'; // Define hour as a valid option
+  minute?: 'numeric' | '2-digit'; // Define minute as a valid option
+}
 
 interface User {
     name: string;
     freetime: string[];
+    timezone:string
   }
 
 interface Event{
@@ -21,7 +32,6 @@ interface Event{
   initialTime: string;
   finalTime: string;
   timezone: string;
-  dates_format: boolean;
   dates: Date[];
   days: string[];
   all_users_freetime: JSON[]
@@ -37,19 +47,18 @@ interface TimeGridProps {
 
 // Generates time grid divs
 export default function TimeGrids(props:TimeGridProps){
-  
+  const router = useRouter();
   // Redux states
   const dispatch= useAppDispatch();
   const selectedTimes = useAppSelector((state) => state.selectedTimes);
   const isAllUsersViewEnabled = useAppSelector((state) => state.allUsersView);
-  const mostSharedTimes = useAppSelector((state)=>state.mostSharedTimes)
-  const dateView = useAppSelector((state) => state.dateView);
+
+  // States
+  const [serverEvent, setServerEvent] = useState<any>('')
+  const [eventId, setEventId] = useState('');
 
   // Mouse state
   const [mouseIsDown, setMouseIsDown] = useState(false);
-
-  // Local most shared users state
-  const [mostSharedUsers, setMostSharedUsers]=useState<string[]>([])
 
   // all mouse functions that handle dragover logic
   // ***
@@ -89,6 +98,52 @@ export default function TimeGrids(props:TimeGridProps){
   };
   // ***
 
+  // fetch server side event state for comparison with local event state (after timezone conversion)
+  useEffect(() => {
+    setEventId(router.asPath.replace(/^\/+/, ''));
+    async function fetchEventDetails() {
+        try{
+            const response = await fetch(`http://localhost:1234/${eventId}`,
+            {method: "GET",
+            headers: {
+            'Content-Type': 'application/json',
+            }}
+        );
+
+        if(response.ok){
+            const eventData = await response.json();
+            setServerEvent(eventData)
+        }
+        else{
+            console.log(response.status, response.statusText)
+        }
+        }catch(error){
+            console.log(error)
+        }
+    }
+    //if eventId is confirmed, fetch details
+    if(eventId){
+        fetchEventDetails();
+    }
+    
+  }, [eventId, router.asPath]);
+
+  function normalizeFreetimesToCommonTimezone(user:User) {
+    const targetTimezone = "America/New_York"
+    return user.freetime.map((freetime) => {
+      const [dateStr, timeStr] = freetime.split("_");
+      const dateTime = DateTime.fromFormat(dateStr + ' ' + timeStr, 'LLL,dd,yyyy HH:mm', {
+        zone: user.timezone,
+      });
+       // Convert to the new timezone
+    const convertedDateTime = dateTime.setZone(targetTimezone);
+    // Format the date and time string in your desired format
+    const formattedDateTime = convertedDateTime.toFormat('LLL,dd,yyyy_HH:mm');
+
+    return formattedDateTime;
+    });
+  }
+
   return (
     <Grid.Col>
     {props.eventTimes.map((time:Date, index:number) => {
@@ -97,55 +152,53 @@ export default function TimeGrids(props:TimeGridProps){
       let id="";
       let year=0, month="", day=0;
       const userNames:string[]= [];
-      if(props.event.dates_format===true){
-        const newDate=new Date(props.date)
-        month = newDate.toLocaleString('default', { month: 'short' });
-        day = newDate.getDate();
-        year = newDate.getFullYear();
-        id = `${month},${day},${year}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
+      // if event exists
+      if(props.event){
+        // and dates has values in it
+        if(props.event.dates.length>0){
+          const newDate=new Date(props.date)
+          month = newDate.toLocaleString('default', { month: 'short' });
+          day = newDate.getDate();
+          year = newDate.getFullYear();
+          id = `${month},${day},${year}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
+        }
+        // else, process id with regards to days instead
+        else{
+          id=`${props.date}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`
+        }
       }
-      else{
-        id=`${props.date}_${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`
-      }
-      
+     
+      const serverUsersFreetime = serverEvent.all_users_freetime;
+      const serverTimeZone = serverEvent.timezone
       // if all users view is enabled and props.event exists
-      if(isAllUsersViewEnabled && props.event.all_users_freetime.length>0){
+      if(isAllUsersViewEnabled && serverUsersFreetime.length>0){
 
         // if true and event exists, loop through every user in all_users_freetime and show their freetimes on the grid
         // store all users sharing the same time slot to userNames array, then assign it to data-names
-        props.event.all_users_freetime.forEach((user:any,index:number)=>{
+        serverUsersFreetime.forEach((user:any,index:number)=>{
 
           // if user exists
-          if(user){
-
-            // and their freetime has the current div time included
-            if(user.freetime.includes(id)){
-
-              // update time values
+          if (user) {
+            if (user.timezone !== serverTimeZone) {
+              const normalizedFreetime = normalizeFreetimesToCommonTimezone(user);
+              if (normalizedFreetime.includes(id)) {
+                isTimeSelected = true;
+                userNames.push(user.name);
+              }
+            }
+            else if (user.timezone === serverTimeZone && user.freetime.includes(id)) {
               isTimeSelected = true;
-              userNames.push(user.name)
-              let mostSharedDatesBuffer= JSON.parse(JSON.stringify(mostSharedTimes.dates))
+              userNames.push(user.name);
+            }
+          }
+            
 
-              // if time slot has the most users so far
-              // if(userNames.length>mostSharedTimes.names.length){
-              //   // add date values to shared dates buffer
-              //   mostSharedDatesBuffer=[...mostSharedDatesBuffer,id]
-              //   // update most shared time value to latest names and dates
-              //   dispatch(setMostSharedTimes({names:userNames,dates:mostSharedDatesBuffer}))
-              // }
-            }}
-
-          percentage = (userNames.length/props.event.all_users_freetime.length)*100;    
+          percentage = (userNames.length/serverUsersFreetime.length)*100;    
         })
        
       }
-      else{
-        // else, render only the current users freetime
-        isTimeSelected = selectedTimes.includes(id);
-      } 
       
       const sharedUsers=userNames.join(', ')
-      // const percentage = (userNames.length/props.event.all_users_freetime.length)*100;
       return(
           <div className="flex" key={index}>
             {props.outerIndex === 0 && (
