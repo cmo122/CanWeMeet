@@ -55,7 +55,7 @@ export default function TimeGrids(props:TimeGridProps){
 
   // States
   const [serverEvent, setServerEvent] = useState<any>('')
-  const [eventId, setEventId] = useState('');
+  // const [eventId, setEventId] = useState('');
   const [bufferedTimes, setBufferedTimes] = useState<string[]>([]);
 
   // Mouse state
@@ -104,34 +104,34 @@ export default function TimeGrids(props:TimeGridProps){
   }, [selectedTimes]);
 
   // fetch server side event state for comparison with local event state (after timezone conversion)
-  useEffect(() => {
-    setEventId(router.asPath.replace(/^\/+/, ''));
-    async function fetchEventDetails() {
-        try{
-            const response = await fetch(`http://localhost:1234/${eventId}`,
-            {method: "GET",
-            headers: {
-            'Content-Type': 'application/json',
-            }}
-        );
+  // useEffect(() => {
+  //   setEventId(router.asPath.replace(/^\/+/, ''));
+  //   async function fetchEventDetails() {
+  //       try{
+  //           const response = await fetch(`http://localhost:1234/${eventId}`,
+  //           {method: "GET",
+  //           headers: {
+  //           'Content-Type': 'application/json',
+  //           }}
+  //       );
 
-        if(response.ok){
-            const eventData = await response.json();
-            setServerEvent(eventData)
-        }
-        else{
-            console.log(response.status, response.statusText)
-        }
-        }catch(error){
-            console.log(error)
-        }
-    }
-    //if eventId is confirmed, fetch details
-    if(eventId){
-        fetchEventDetails();
-    }
+  //       if(response.ok){
+  //           const eventData = await response.json();
+  //           setServerEvent(eventData)
+  //       }
+  //       else{
+  //           console.log(response.status, response.statusText)
+  //       }
+  //       }catch(error){
+  //           console.log(error)
+  //       }
+  //   }
+  //   //if eventId is confirmed, fetch details
+  //   if(eventId){
+  //       fetchEventDetails();
+  //   }
     
-  }, [eventId, router.asPath]);
+  // }, [eventId, router.asPath]);
 
   function normalizeFreetimesToCommonTimezone(user:User) {
     const targetTimezone = props.event.timezone
@@ -191,8 +191,8 @@ export default function TimeGrids(props:TimeGridProps){
         }
       }
      
-      const serverUsersFreetime = serverEvent.all_users_freetime;
-      const serverTimeZone = serverEvent.timezone
+      const serverUsersFreetime = props.event.all_users_freetime;
+      const serverTimeZone = props.event.timezone
       // if all users view is enabled and props.event exists
       if(isAllUsersViewEnabled && serverUsersFreetime.length>0){
 
