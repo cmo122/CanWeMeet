@@ -4,7 +4,6 @@ import { useAppSelector, useAppDispatch } from "./redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
 import { setHoverStateView } from "./redux/hoverStateSlice";
 import { setSharedUsers } from "./redux/sharedUsersSlice";
-import { useRouter } from 'next/router';
 import check from './icons/check.svg'
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -47,19 +46,18 @@ interface TimeGridProps {
 
 // Generates time grid divs
 export default function TimeGrids(props:TimeGridProps){
-  const router = useRouter();
   // Redux states
   const dispatch= useAppDispatch();
   const selectedTimes = useAppSelector((state) => state.selectedTimes);
   const isAllUsersViewEnabled = useAppSelector((state) => state.allUsersView);
 
-  // States
-  const [serverEvent, setServerEvent] = useState<any>('')
-  // const [eventId, setEventId] = useState('');
+  // buffer states
   const [bufferedTimes, setBufferedTimes] = useState<string[]>([]);
 
   // Mouse state
   const [mouseIsDown, setMouseIsDown] = useState(false);
+  //Touch state
+  const [isTouching, setTouching] = useState(false);
 
   // all mouse functions that handle dragover logic
   // ***
@@ -99,39 +97,35 @@ export default function TimeGrids(props:TimeGridProps){
   };
   // ***
 
+  // all touch functions for mobile logic
+  // ***
+  const handleTouchStart = (id: string, sharedUsers:string) => {
+    if (!props.user.name) return;
+    if (selectedTimes.includes(id)) {
+      const updatedSelectedTimes = selectedTimes.filter((divId) => divId !== id);
+      dispatch(setSelectedTimes(updatedSelectedTimes));
+    } else {
+      dispatch(setSelectedTimes([...selectedTimes, id]));
+    }
+    setTouching(true);
+    setTimeout(() => {
+      if (isTouching) {
+        setHoverStateView(true);
+        dispatch(setSharedUsers(sharedUsers))
+      }
+    }, 1000);
+  };
+  
+  const handleTouchEnd = (id: string) => {
+    if (!props.user.name) return;
+    setTouching(false);
+    setHoverStateView(false);
+  };
+  // ***
+
   useEffect(() => {
     setBufferedTimes(selectedTimes);
   }, [selectedTimes]);
-
-  // fetch server side event state for comparison with local event state (after timezone conversion)
-  // useEffect(() => {
-  //   setEventId(router.asPath.replace(/^\/+/, ''));
-  //   async function fetchEventDetails() {
-  //       try{
-  //           const response = await fetch(`http://localhost:1234/${eventId}`,
-  //           {method: "GET",
-  //           headers: {
-  //           'Content-Type': 'application/json',
-  //           }}
-  //       );
-
-  //       if(response.ok){
-  //           const eventData = await response.json();
-  //           setServerEvent(eventData)
-  //       }
-  //       else{
-  //           console.log(response.status, response.statusText)
-  //       }
-  //       }catch(error){
-  //           console.log(error)
-  //       }
-  //   }
-  //   //if eventId is confirmed, fetch details
-  //   if(eventId){
-  //       fetchEventDetails();
-  //   }
-    
-  // }, [eventId, router.asPath]);
 
   function normalizeFreetimesToCommonTimezone(user:User) {
     const targetTimezone = props.event.timezone
@@ -166,7 +160,6 @@ export default function TimeGrids(props:TimeGridProps){
   return normalizedFreetime;
 }
 
-
   return (
     <Grid.Col>
     {props.eventTimes.map((time:Date, index:number) => {
@@ -191,14 +184,12 @@ export default function TimeGrids(props:TimeGridProps){
         }
       }
      
-      const serverUsersFreetime = props.event.all_users_freetime;
       const serverTimeZone = props.event.timezone
       // if all users view is enabled and props.event exists
-      if(isAllUsersViewEnabled && serverUsersFreetime.length>0){
-
+      if(isAllUsersViewEnabled && props.event.all_users_freetime.length>0){
         // if true and event exists, loop through every user in all_users_freetime and show their freetimes on the grid
         // store all users sharing the same time slot to userNames array, then assign it to data-names
-        serverUsersFreetime.forEach((user:any,index:number)=>{
+        props.event.all_users_freetime.forEach((user:any,index:number)=>{
 
           // if user exists
           if (user) {
@@ -216,14 +207,16 @@ export default function TimeGrids(props:TimeGridProps){
                 userNames.push(user.name);
               }
             }
-            else if (user.timezone === serverTimeZone && user.freetime.includes(id)) {
-              isTimeSelected = true;
-              userNames.push(user.name);
+            else {
+              if (user.freetime.includes(id)){
+                isTimeSelected = true;
+                userNames.push(user.name);
+              }
             }
           }
             
 
-          percentage = (userNames.length/serverUsersFreetime.length)*100;    
+          percentage = (userNames.length/props.event.all_users_freetime.length)*100;    
         })
        
       }
@@ -258,6 +251,8 @@ export default function TimeGrids(props:TimeGridProps){
                 onMouseUp={() => handleMouseUp(id)}
                 onMouseEnter={() => handleMouseEnter(id, sharedUsers)}
                 onMouseOut={()=>handleMouseOut()}
+                onTouchStart={() => handleTouchStart(id, sharedUsers)}
+                onTouchEnd={() => handleTouchEnd(id)}
                 >
                 {isTimeSelected && isAllUsersViewEnabled && <div style={{
                   width: 20,

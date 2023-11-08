@@ -43,6 +43,9 @@ export default function Event() {
   const [days, setDays] = useState<any>([])
   const [confirmAnimation, setConfirmAnimation]= useState<boolean>(false)
   const [loadingAnimation, setLoadingAnimation]= useState<boolean>(false)
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [copyLinkButtonText, setCopyLinkButtonText] = useState('Copy Link');
   // User states
   const [nameInput, setNameInput]=useState<string>('')
   const [anonUser, setAnonUser] = useState<User>({name:'', freetime:[], timezone:''})
@@ -138,12 +141,9 @@ export default function Event() {
     }
   }
 
-  useEffect(()=>{
-    setEventId(router.asPath.replace(/^\/+/, ''))
-  },[router.asPath])
-
   // Sets event ID, then sets even state to correct row in supabase upon page load
   useEffect(() => {
+    setEventId(router.asPath.replace(/^\/+/, ''))
       async function fetchEventDetails() {
           try{
               const response = await fetch(`http://localhost:1234/${eventId}`,
@@ -165,9 +165,12 @@ export default function Event() {
           }
       }
       //if eventId is confirmed, fetch details
-      fetchEventDetails();
+      if(eventId){
+        fetchEventDetails();
+      }
       
-  }, [eventId]);
+      
+  }, [eventId, router.asPath]);
 
   // Sets time range for time grid generation
   // converts times if time zones differ
@@ -240,7 +243,19 @@ export default function Event() {
     const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setAnonUser({name:nameInput, freetime:[], timezone:systemTimezone});
   }
-console.log(sortedDates)
+
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(window.location.href);
+      setNotificationMessage('Link copied to clipboard');
+      setShowNotification(true);
+      setCopyLinkButtonText('Copied Link!'); 
+    } catch (error) {
+      setNotificationMessage('Failed to copy link');
+      setShowNotification(true);
+    }
+  };
+
   return (
       <Layout>
       {event && sortedDates.length>0 ? (
@@ -249,12 +264,9 @@ console.log(sortedDates)
           <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
 
           <div className="rounded-lg border border-sky-500 m-2 overflow:auto">{window.location.href}
-              <button className={`rounded-lg border-solid border border-sky-500 p-1 m-5 
-              `}
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-              }}
-              >Copy Link</button>
+              <button className={`rounded-lg border-solid border border-sky-500 p-3 m-5 min-w-fit text-sm`}
+              onClick={handleCopyLink}
+              >{copyLinkButtonText}</button>
           </div>
 
           {anonUser.name==='' && 
