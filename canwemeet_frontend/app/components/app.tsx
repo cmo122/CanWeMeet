@@ -69,9 +69,7 @@ export default function App() {
     const result = validateTimeOrder(data.initialTime, data.finalTime, data.initialTimeMeridiem, data.finalTimeMeridiem);
 
     if(result){
-      // Eastern timezone for testing only
-      // REMOVE WHEN DONE
-      data.timezone = 'America/New_York'
+      data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       await fetch('http://localhost:1234', {
         method: 'POST',
         headers: {

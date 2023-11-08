@@ -56,6 +56,7 @@ export default function TimeGrids(props:TimeGridProps){
   // States
   const [serverEvent, setServerEvent] = useState<any>('')
   const [eventId, setEventId] = useState('');
+  const [bufferedTimes, setBufferedTimes] = useState<string[]>([]);
 
   // Mouse state
   const [mouseIsDown, setMouseIsDown] = useState(false);
@@ -98,6 +99,10 @@ export default function TimeGrids(props:TimeGridProps){
   };
   // ***
 
+  useEffect(() => {
+    setBufferedTimes(selectedTimes);
+  }, [selectedTimes]);
+
   // fetch server side event state for comparison with local event state (after timezone conversion)
   useEffect(() => {
     setEventId(router.asPath.replace(/^\/+/, ''));
@@ -129,7 +134,7 @@ export default function TimeGrids(props:TimeGridProps){
   }, [eventId, router.asPath]);
 
   function normalizeFreetimesToCommonTimezone(user:User) {
-    const targetTimezone = "America/New_York"
+    const targetTimezone = props.event.timezone
     return user.freetime.map((freetime) => {
       const [dateStr, timeStr] = freetime.split("_");
       const dateTime = DateTime.fromFormat(dateStr + ' ' + timeStr, 'LLL,dd,yyyy HH:mm', {
@@ -143,6 +148,24 @@ export default function TimeGrids(props:TimeGridProps){
     return formattedDateTime;
     });
   }
+ 
+
+  function normalizeDays(user:User) {
+    const targetTimezone = props.event.timezone;
+
+    // Create a mapping function to process a user's freetime
+    const normalizedFreetime = user.freetime.map((freetime) => {
+      const [daysStr, timeStr] = freetime.split('_');
+      const days = daysStr.split('_');
+      const formattedTime = DateTime.fromFormat(timeStr, 'HH:mm', { zone: user.timezone })
+      .setZone(targetTimezone)
+      .toFormat('HH:mm');
+      const daysString = days.join('_');
+      return `${daysString}_${formattedTime}`;
+  });
+  return normalizedFreetime;
+}
+
 
   return (
     <Grid.Col>
@@ -179,8 +202,15 @@ export default function TimeGrids(props:TimeGridProps){
 
           // if user exists
           if (user) {
-            if (user.timezone !== serverTimeZone) {
+            if (user.timezone !== serverTimeZone && props.event.dates.length>0) {
               const normalizedFreetime = normalizeFreetimesToCommonTimezone(user);
+              if (normalizedFreetime.includes(id)) {
+                isTimeSelected = true;
+                userNames.push(user.name);
+              }
+            }
+            else if (user.timezone !== serverTimeZone && props.event.days.length>0) {
+              const normalizedFreetime = normalizeDays(user);
               if (normalizedFreetime.includes(id)) {
                 isTimeSelected = true;
                 userNames.push(user.name);
@@ -196,6 +226,11 @@ export default function TimeGrids(props:TimeGridProps){
           percentage = (userNames.length/serverUsersFreetime.length)*100;    
         })
        
+      }
+      else{
+        if(bufferedTimes.includes(id)){
+          isTimeSelected=true;
+        }
       }
       
       const sharedUsers=userNames.join(', ')

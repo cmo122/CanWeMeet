@@ -68,6 +68,7 @@ export default function Event() {
           if(response.ok){
               const eventData = await response.json();
               setEvent(eventData[0])
+              console.log(event)
               setConfirmAnimation(true)
               setTimeout(()=>setConfirmAnimation(false),1000)
           }
@@ -174,13 +175,8 @@ export default function Event() {
     
     let newDates;
     // if event exists
-    if(event && typeof event.initialTime === 'string'){
-      //set to new york for testing purposes
-      // *********
-      // CHANGE BACK TO SYSTEM VALUE ONCE DONE TESTING  
-      //**********
-      const currentUserTimezone = "America/New_York"
-      // const currentUserTimezone = event.timezone
+    if(event){
+      const currentUserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       // TIMEZONE STUFF
       // if local timezone doesnt match with event timezone, convert event values to
       // local timezone's
@@ -221,136 +217,135 @@ export default function Event() {
         }
       }
       setEventTimes(timeIntervals);
-      }
+    }
   },[event])
 
-    // sets selectedTimes to server time once existing user name is confirmed
-    useEffect(()=>{
-        if(event && anonUser.name){
-            const existingUser = event.all_users_freetime.find((user:User) => user.name === anonUser.name);
-            if(existingUser){
-                const userServerFreetime = existingUser.freetime;
-                dispatch(setSelectedTimes(userServerFreetime))
-            }
-        }
-        if(event && anonUser.name===''){
-          dispatch(setSelectedTimes([]))
-        }
-        console.log(event)
-    }, [anonUser, event])
+  // sets selectedTimes to server time once existing user name is confirmed
+  useEffect(()=>{
+      if(event && anonUser.name){
+          const existingUser = event.all_users_freetime.find((user:User) => user.name === anonUser.name);
+          if(existingUser){
+              const userServerFreetime = existingUser.freetime;
+              dispatch(setSelectedTimes(userServerFreetime))
+          }
+      }
+      if(event && anonUser.name==='' && anonUser.timezone===''){
+        dispatch(setSelectedTimes([]))
+      }
+  }, [anonUser, event])
 
-    // Sets user details upon entering name
-    const handleSubmit: React.FormEventHandler = (e) => {
-      e.preventDefault();
-      const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      setAnonUser({name:nameInput, freetime:[], timezone:systemTimezone});
-    }
+  // Sets user details upon entering name
+  const handleSubmit: React.FormEventHandler = (e) => {
+    e.preventDefault();
+    const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setAnonUser({name:nameInput, freetime:[], timezone:systemTimezone});
+  }
+console.log(sortedDates)
+  return (
+      <Layout>
+      {event && sortedDates.length>0 ? (
+        <div className="flex justify-center items-center">
+          <GlassWindow >
+          <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
 
-    return (
-        <Layout>
-        {event && sortedDates ? (
-          <div className="flex justify-center items-center">
-            <GlassWindow >
-            <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>
-
-            <div className="rounded-lg border border-sky-500 m-2 overflow:auto">{window.location.href}
-                <button className={`rounded-lg border-solid border border-sky-500 p-1 m-5 
-                `}
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                }}
-                >Copy Link</button>
-            </div>
-
-            {anonUser.name==='' && 
-            <form onSubmit={handleSubmit}>
-            <TextInput
-            label="Enter name to start entering dates: "
-            placeholder="John Doe"
-            onChange={(e) => setNameInput(e.target.value)}
-            />
-            
-            <Button type='submit' className="bg-blue-500 m-2">Sign In</Button>
-            </form>}
-
-            {anonUser && <div>{anonUser.name}</div>}
-            {anonUser.name && <Button onClick={()=>setAnonUser({name:"",freetime:[], timezone:""})} className="bg-blue-500 m-2">Sign Out</Button>}
-            {anonUser.name && <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>
-            {loadingAnimation ? (
-              <div className="sk-circle">
-                <div className="sk-circle1 sk-child"></div>
-                <div className="sk-circle2 sk-child"></div>
-                <div className="sk-circle3 sk-child"></div>
-                <div className="sk-circle4 sk-child"></div>
-                <div className="sk-circle5 sk-child"></div>
-                <div className="sk-circle6 sk-child"></div>
-                <div className="sk-circle7 sk-child"></div>
-                <div className="sk-circle8 sk-child"></div>
-                <div className="sk-circle9 sk-child"></div>
-                <div className="sk-circle10 sk-child"></div>
-                <div className="sk-circle11 sk-child"></div>
-                <div className="sk-circle12 sk-child"></div>
-            </div>
-            ) : confirmAnimation ? (
-              <Image src={checkCircle} alt="Check circle" className="confirm-animation" />
-            ) : (
-              'Update Freetime'
-            )}
-            </Button>}
-
-            
-            <p>Current time grid view:</p>
-            <TimeGridViewPicker/>
-            <Grid styles={customGridStyles}
-            gutter={0}>
-                {sortedDates.length>0 && sortedDates.map((date : string, index : number)=>{
-                    const convertDate=new Date(date)
-                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
-                    const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
-                    return(
-                    <Grid.Col span={12/sortedDates.length} key={index}>
-                        <div>
-                            <p className=" flex text-sm justify-end">{formattedDate}</p>
-                            <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
-                        </div>
-                        <div className="flex">
-                            <TimeGrids
-                            outerIndex={index}
-                            date={date}
-                            eventTimes={eventTimes}
-                            user={anonUser}
-                            event={event}
-                            />
-                        </div>
-                    </Grid.Col>
-                    )
-                })}
-                {days.length>0 && days.map((date : string, index : number)=>{
-                    return(
-                    <Grid.Col span={4} key={index}>
-                        <div>
-                            <p className=" flex text-sm justify-end">{date}</p>
-                        </div>
-                        <div className="flex">
-                            <TimeGrids
-                            outerIndex={index}
-                            date={date}
-                            eventTimes={eventTimes}
-                            user={anonUser}
-                            event={event}
-                            />
-                        </div>
-                    </Grid.Col>
-                    )
-                })}
-            </Grid>
-
-            </GlassWindow>
+          <div className="rounded-lg border border-sky-500 m-2 overflow:auto">{window.location.href}
+              <button className={`rounded-lg border-solid border border-sky-500 p-1 m-5 
+              `}
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+              }}
+              >Copy Link</button>
           </div>
-        ) : (
-          <p className="h-screen">Loading event details...</p>
-        )}
-      </Layout>
-    )
+
+          {anonUser.name==='' && 
+          <form onSubmit={handleSubmit}>
+          <TextInput
+          label="Enter name to start entering dates: "
+          placeholder="John Doe"
+          onChange={(e) => setNameInput(e.target.value)}
+          />
+          
+          <Button type='submit' className="bg-blue-500 m-2">Sign In</Button>
+          </form>}
+
+          {anonUser && <div>{anonUser.name}</div>}
+          {anonUser.name && <Button onClick={()=>setAnonUser({name:"",freetime:[], timezone:""})} className="bg-blue-500 m-2">Sign Out</Button>}
+          {anonUser.name && <Button className="flex items-center justify-center bg-blue-500 m-2" onClick={()=>updateFreetime()}>
+          {loadingAnimation ? (
+            <div className="sk-circle">
+              <div className="sk-circle1 sk-child"></div>
+              <div className="sk-circle2 sk-child"></div>
+              <div className="sk-circle3 sk-child"></div>
+              <div className="sk-circle4 sk-child"></div>
+              <div className="sk-circle5 sk-child"></div>
+              <div className="sk-circle6 sk-child"></div>
+              <div className="sk-circle7 sk-child"></div>
+              <div className="sk-circle8 sk-child"></div>
+              <div className="sk-circle9 sk-child"></div>
+              <div className="sk-circle10 sk-child"></div>
+              <div className="sk-circle11 sk-child"></div>
+              <div className="sk-circle12 sk-child"></div>
+          </div>
+          ) : confirmAnimation ? (
+            <Image src={checkCircle} alt="Check circle" className="confirm-animation" />
+          ) : (
+            'Update Freetime'
+          )}
+          </Button>}
+
+          
+          <p>Current time grid view:</p>
+          <TimeGridViewPicker/>
+          <Grid styles={customGridStyles}
+          gutter={0}>
+              {sortedDates.length>0 && sortedDates.map((date : string, index : number)=>{
+                  const convertDate=new Date(date)
+                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                  const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
+                  const formattedDate = `${monthNames[convertDate.getMonth()]} ${convertDate.getDate()}`;
+                  return(
+                  <Grid.Col span="auto" key={index}>
+                      <div>
+                          <p className=" flex text-sm justify-end">{formattedDate}</p>
+                          <p className=" flex text-sm justify-end">{dayNames[convertDate.getDay()]}</p>
+                      </div>
+                      <div className="flex">
+                          <TimeGrids
+                          outerIndex={index}
+                          date={date}
+                          eventTimes={eventTimes}
+                          user={anonUser}
+                          event={event}
+                          />
+                      </div>
+                  </Grid.Col>
+                  )
+              })}
+              {days.length>0 && days.map((date : string, index : number)=>{
+                  return(
+                  <Grid.Col span="auto" key={index}>
+                      <div>
+                          <p className=" flex text-sm justify-end">{date}</p>
+                      </div>
+                      <div className="flex">
+                          <TimeGrids
+                          outerIndex={index}
+                          date={date}
+                          eventTimes={eventTimes}
+                          user={anonUser}
+                          event={event}
+                          />
+                      </div>
+                  </Grid.Col>
+                  )
+              })}
+          </Grid>
+
+          </GlassWindow>
+        </div>
+      ) : (
+        <p className="h-screen">Loading event details...</p>
+      )}
+    </Layout>
+  )
 }
