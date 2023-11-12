@@ -166,9 +166,7 @@ export default function Event() {
           }
       }
       //if eventId is confirmed, fetch details
-      if(eventId){
         fetchEventDetails();
-      }
   }, [eventId, router.asPath]);
 
   // Sets time range for time grid generation
