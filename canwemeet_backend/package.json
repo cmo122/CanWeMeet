@@ -7,15 +7,15 @@
   "license": "ISC",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.7.4",
     "@supabase/supabase-js": "^2.33.1",
+    "@types/http-errors": "^2.0.4",
     "@types/node": "^20.6.2",
-    "bcrypt": "^5.1.1",
-    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cors-anywhere": "^0.4.4",
     "dotenv": "^16.3.1",
@@ -28,17 +28,10 @@
     "morgan": "^1.10.0",
     "next": "^13.4.19",
     "nodemon": "^3.0.1",
-    "passport": "^0.6.0",
-    "passport-local": "^1.0.0",
-    "pg-promise": "^11.5.4",
     "pino": "^8.15.0",
     "pino-http": "^8.4.0",
     "pino-pretty": "^10.2.0",
     "pug": "^3.0.2",
-    "socket.io": "^4.7.2",
-    "sqids": "^0.3.0"
-  },
-  "devDependencies": {
     "supabase": "^1.93.0"
   }
 }

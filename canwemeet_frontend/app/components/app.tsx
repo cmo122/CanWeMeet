@@ -70,7 +70,7 @@ export default function App() {
 
     if(result){
       data.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await fetch('http://localhost:1234', {
+      await fetch('https://canwemeet-backend.fly.dev/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,0 +1,22 @@
+version: '3'
+services:
+  frontend:
+    image: canwemeet-frontend:latest
+    container_name: frontend_container
+    ports:
+      - "3000:3000"
+    networks:
+      - mynetwork
+
+  backend:
+    image: canwemeet-backend:latest
+    container_name: backend_container
+    ports:
+      - "1234:1234"
+    networks:
+      - mynetwork
+    env_file:
+      - ./canwemeet_backend/.env
+
+networks:
+  mynetwork:

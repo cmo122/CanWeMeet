@@ -1,11 +1,10 @@
-import React, {useState,useEffect, FormEventHandler} from "react";
+import React, {useState,useEffect} from "react";
 import { Grid, TextInput, Button } from '@mantine/core';
 import { useRouter } from 'next/router';
 import Image from "next/image";
 import Layout from './Layout'
 import '../styles/event.css'
 import '../styles/loading.css'
-require('dotenv').config();
 import GlassWindow from "@/app/components/GlassWindow";
 import { useAppSelector, useAppDispatch } from "@/app/components/redux/hooks";
 import { setSelectedTimes } from "./redux/selectedTimesSlice";
@@ -34,9 +33,11 @@ interface User {
 
 export default function Event() {
   const router = useRouter();
+  
   // Event states
   
   const [eventId, setEventId] = useState('');
+  
   const [event, setEvent] = useState<any>(null);
   const [eventTimes, setEventTimes]=useState<any>([])
   const [sortedDates, setSortedDates] = useState<any>([])
@@ -60,7 +61,7 @@ export default function Event() {
     const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if(anonUser.name && selectedTimes.length>0){
           try{
-              const response = await fetch(`http://localhost:1234/${eventId}`,
+              const response = await fetch(`https://canwemeet-backend.fly.dev/${eventId}`,
               {method: "POST",
               headers: {
               'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ export default function Event() {
     setEventId(router.asPath.replace(/^\/+/, ''))
       async function fetchEventDetails() {
           try{
-              const response = await fetch(`http://localhost:1234/${eventId}`,
+              const response = await fetch(`https://canwemeet-backend.fly.dev/${eventId}`,
               {method: "GET",
               headers: {
               'Content-Type': 'application/json',
@@ -168,14 +169,11 @@ export default function Event() {
       if(eventId){
         fetchEventDetails();
       }
-      
-      
   }, [eventId, router.asPath]);
 
   // Sets time range for time grid generation
   // converts times if time zones differ
   useEffect(()=>{
-    
     let newDates;
     // if event exists
     if(event){
@@ -255,10 +253,9 @@ export default function Event() {
       setShowNotification(true);
     }
   };
-
   return (
       <Layout>
-      {event && sortedDates.length>0 ? (
+      {event ? (
         <div className="flex justify-center items-center">
           <GlassWindow >
           <h5 className="text-4xl"><strong>{event.eventName}</strong></h5>

@@ -1,0 +1,24 @@
+# fly.toml app configuration file generated for canwemeet-backend on 2023-11-12T04:52:07-08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "canwemeet-backend"
+primary_region = "lax"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "1234"
+  SECRET_KEY = "test"
+  SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvZWxtcWtpZ3V3bGRnZXF4eHZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTM1MzI0ODgsImV4cCI6MjAwOTEwODQ4OH0.Ggjq_DQ1qWrSvKJE1rEg_oNBiGX1o2RpgOjh92Zv2Dg"
+  SUPABASE_URL = "https://foelmqkiguwldgeqxxvu.supabase.co"
+
+[http_service]
+  internal_port = 1234
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]

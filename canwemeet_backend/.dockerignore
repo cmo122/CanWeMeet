@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log
+.env
+.DS_Store
+.vscode
+*.log
+*.bak
+*.swp
+*.swo
+*.out
+*.pid
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
